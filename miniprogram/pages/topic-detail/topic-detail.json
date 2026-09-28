@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "专题详情",
+  "usingComponents": {
+    "loading-view": "/components/loading/loading",
+    "empty-view": "/components/empty/empty",
+    "error-view": "/components/error/error",
+    "content-card": "/components/content-card/content-card"
+  }
+}

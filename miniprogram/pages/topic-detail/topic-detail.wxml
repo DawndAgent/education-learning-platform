@@ -1,0 +1,32 @@
+<view class="page">
+  <view class="back" bindtap="goBack">返回</view>
+
+  <loading-view wx:if="{{status === 'loading'}}" message="加载中..." />
+  <error-view
+    wx:elif="{{status === 'error'}}"
+    message="{{message}}"
+    button-text="重新加载"
+    bind:retry="loadDetail"
+  />
+  <block wx:else>
+    <image wx:if="{{coverUrl}}" class="cover" src="{{coverUrl}}" mode="aspectFill" />
+    <view wx:else class="cover cover-fallback">暂无封面</view>
+    <view class="name">{{name}}</view>
+    <view class="meta" wx:if="{{categoryName}}">{{categoryName}}</view>
+    <view class="summary" wx:if="{{summary}}">{{summary}}</view>
+
+    <view class="section">专题内容</view>
+    <empty-view wx:if="{{contents.length === 0}}" message="暂无内容" />
+    <view class="content-row" wx:for="{{contents}}" wx:key="id">
+      <view class="index">{{item.index}}</view>
+      <content-card
+        title="{{item.title}}"
+        cover-url="{{item.coverUrl}}"
+        type-label="{{item.typeLabel}}"
+        summary="{{item.summary}}"
+        url="{{item.url}}"
+        layout="stack"
+      />
+    </view>
+  </block>
+</view>

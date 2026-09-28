@@ -1,0 +1,15 @@
+target/
+node_modules/
+miniprogram_npm/
+data/uploads/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+*.log
+.DS_Store
+
+data/uploads/
+target/test-uploads/

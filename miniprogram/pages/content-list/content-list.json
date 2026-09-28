@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "内容列表",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "onReachBottomDistance": 80,
+  "usingComponents": {
+    "loading-view": "/components/loading/loading",
+    "empty-view": "/components/empty/empty",
+    "error-view": "/components/error/error",
+    "content-card": "/components/content-card/content-card"
+  }
+}

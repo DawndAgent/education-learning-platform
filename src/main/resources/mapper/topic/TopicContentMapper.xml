@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xxedu.learning.modules.topic.mapper.TopicContentMapper">
+
+    <select id="selectAdminContents" resultType="com.xxedu.learning.modules.topic.mapper.TopicContentRow">
+        SELECT tc.id AS itemId,
+               tc.content_id AS contentId,
+               c.title,
+               c.content_type AS contentType,
+               c.cover_url AS coverUrl,
+               c.summary,
+               c.category_id AS categoryId,
+               c.status,
+               tc.sort
+        FROM topic_content tc
+                 INNER JOIN content c ON c.id = tc.content_id AND c.deleted = 0
+        WHERE tc.topic_id = #{topicId}
+          AND tc.deleted = 0
+        ORDER BY tc.sort ASC, tc.id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectPublishedContents" resultType="com.xxedu.learning.modules.topic.mapper.TopicContentRow">
+        SELECT tc.id AS itemId,
+               tc.content_id AS contentId,
+               c.title,
+               c.content_type AS contentType,
+               c.cover_url AS coverUrl,
+               c.summary,
+               c.category_id AS categoryId,
+               c.status,
+               c.publish_time AS publishTime,
+               tc.sort
+        FROM topic_content tc
+                 INNER JOIN content c ON c.id = tc.content_id AND c.deleted = 0
+        WHERE tc.topic_id = #{topicId}
+          AND tc.deleted = 0
+          AND c.status = 'PUBLISHED'
+          AND c.content_type IN ('ARTICLE', 'VIDEO', 'QUESTION', 'WEEKLY', 'DOCUMENT')
+        ORDER BY tc.sort ASC, tc.id ASC
+    </select>
+
+    <select id="selectMaxSort" resultType="java.lang.Integer">
+        SELECT MAX(tc.sort)
+        FROM topic_content tc
+        WHERE tc.topic_id = #{topicId}
+          AND tc.deleted = 0
+    </select>
+</mapper>

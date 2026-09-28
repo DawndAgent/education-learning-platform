@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+      Lombok 构造器会保存 Spring 协作对象。这些字段是服务、配置或 Jackson，不是可复制的集合快照。
+      集合类型的 EI_EXPOSE_REP / EI_EXPOSE_REP2 仍然检查。
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <Class name="~.*Service"/>
+            <Class name="~.*Controller"/>
+            <Class name="~.*Handler"/>
+            <Class name="~.*EntryPoint"/>
+            <Class name="~.*Config"/>
+            <Class name="com.xxedu.learning.security.JwtTokenService"/>
+        </Or>
+    </Match>
+</FindBugsFilter>

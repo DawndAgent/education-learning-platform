@@ -1,0 +1,16 @@
+package com.xxedu.learning.modules.home.enums;
+
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum HomeItemStatus {
+
+    ENABLED("ENABLED"),
+    DISABLED("DISABLED");
+
+    @EnumValue
+    private final String code;
+}

@@ -1,0 +1,4 @@
+<view class="state">
+  <view>{{message}}</view>
+  <view class="retry" bindtap="onRetry">{{buttonText}}</view>
+</view>

@@ -1,0 +1,31 @@
+.section {
+  margin-top: 40rpx;
+  margin-bottom: 8rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.child {
+  display: flex;
+  align-items: center;
+  margin-top: 20rpx;
+  padding: 32rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+}
+
+.child-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 32rpx;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chevron {
+  flex: none;
+  margin-left: 24rpx;
+  color: #8f959e;
+}

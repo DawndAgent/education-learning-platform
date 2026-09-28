@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xxedu.learning.modules.topic.mapper.TopicMapper">
+
+    <select id="selectTopicPage" resultType="com.xxedu.learning.modules.topic.entity.Topic">
+        SELECT t.id,
+               t.name,
+               t.code,
+               t.cover_url,
+               t.summary,
+               t.category_id,
+               t.status,
+               t.sort,
+               t.publish_time,
+               t.created_at,
+               t.updated_at
+        FROM topic t
+        WHERE t.deleted = 0
+        <if test="query.publishedOnly">
+            AND t.status = 'PUBLISHED'
+        </if>
+        <if test="query.publishedOnly == false and query.status != null">
+            AND t.status = #{query.status}
+        </if>
+        <if test="query.categoryIds != null">
+            AND t.category_id IN
+            <foreach collection="query.categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        </if>
+        <if test="query.keywordPattern != null">
+            AND t.name LIKE #{query.keywordPattern} ESCAPE '!'
+        </if>
+        ORDER BY t.sort ASC, t.publish_time DESC, t.id DESC
+    </select>
+
+    <select id="countContentsByTopicIds" resultType="com.xxedu.learning.modules.topic.mapper.TopicContentCountRow">
+        SELECT tc.topic_id AS topicId,
+               COUNT(*) AS contentCount
+        FROM topic_content tc
+        WHERE tc.deleted = 0
+          AND tc.topic_id IN
+        <foreach collection="topicIds" item="topicId" open="(" separator="," close=")">
+            #{topicId}
+        </foreach>
+        GROUP BY tc.topic_id
+    </select>
+
+    <select id="countPublishedContents" resultType="long">
+        SELECT COUNT(*)
+        FROM topic_content tc
+                 INNER JOIN content c ON c.id = tc.content_id AND c.deleted = 0
+        WHERE tc.topic_id = #{topicId}
+          AND tc.deleted = 0
+          AND c.status = 'PUBLISHED'
+          AND c.content_type IN ('ARTICLE', 'VIDEO', 'QUESTION', 'WEEKLY', 'DOCUMENT')
+    </select>
+</mapper>

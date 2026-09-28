@@ -1,0 +1,92 @@
+<view class="page">
+  <view class="hero">
+    <view class="brand">XX教育学习中心</view>
+    <view class="title">学习内容平台</view>
+    <view class="hint">剑桥英语 · 数学思维 · 初中自主学习</view>
+  </view>
+
+  <view class="search-entry" bindtap="goSearch">
+    <text class="search-placeholder">搜索文章、视频标题</text>
+    <text class="search-action">搜索</text>
+  </view>
+
+  <loading-view wx:if="{{status === 'loading' && banners.length === 0 && entries.length === 0}}" message="加载中..." />
+  <error-view
+    wx:elif="{{status === 'error'}}"
+    message="{{error || '首页加载失败'}}"
+    button-text="重新加载"
+    bind:retry="reload"
+  />
+  <block wx:else>
+    <swiper
+      wx:if="{{banners.length}}"
+      class="banner"
+      indicator-dots="{{banners.length > 1}}"
+      circular="{{banners.length > 1}}"
+      autoplay="{{banners.length > 1}}"
+    >
+      <swiper-item wx:for="{{banners}}" wx:key="id">
+        <view class="banner-slide" data-index="{{index}}" bindtap="onBannerTap">
+          <image class="banner-image" src="{{item.imageUrl}}" mode="aspectFill" />
+          <view class="banner-text">
+            <view class="banner-title">{{item.title}}</view>
+            <view class="banner-subtitle" wx:if="{{item.subtitle}}">{{item.subtitle}}</view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <view class="section" wx:if="{{entries.length}}">栏目导航</view>
+    <category-card
+      wx:for="{{entries}}"
+      wx:key="id"
+      name="{{item.name}}"
+      summary="{{item.summary}}"
+      url="{{item.url}}"
+    />
+
+    <view class="section" wx:if="{{recommendations.length}}">重点推荐</view>
+    <content-card
+      wx:for="{{recommendations}}"
+      wx:key="id"
+      title="{{item.title}}"
+      cover-url="{{item.coverUrl}}"
+      type-label="{{item.typeLabel}}"
+      summary="{{item.summary}}"
+      url="{{item.url}}"
+    />
+
+    <view class="section-row" wx:if="{{topics.length}}">
+      <view class="section">专题精选</view>
+      <view class="more" bindtap="goTopicList">全部专题</view>
+    </view>
+    <content-card
+      wx:for="{{topics}}"
+      wx:key="id"
+      title="{{item.title}}"
+      cover-url="{{item.coverUrl}}"
+      type-label="{{item.typeLabel}}"
+      summary="{{item.summary}}"
+      url="{{item.url}}"
+    />
+
+    <view class="section-row">
+      <view class="section">最新内容</view>
+      <view class="more" bindtap="goMore">更多</view>
+    </view>
+    <empty-view wx:if="{{latest.length === 0}}" message="暂无内容" />
+    <block wx:else>
+      <content-card
+        wx:for="{{latest}}"
+        wx:key="id"
+        title="{{item.title}}"
+        cover-url="{{item.coverUrl}}"
+        type-label="{{item.typeLabel}}"
+        meta="{{item.meta}}"
+        summary="{{item.summary}}"
+        date-text="{{item.dateText}}"
+        url="{{item.url}}"
+      />
+    </block>
+  </block>
+</view>

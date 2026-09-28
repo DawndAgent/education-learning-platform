@@ -1,0 +1,7 @@
+<navigator class="card" url="{{url}}">
+  <view class="body">
+    <view class="name">{{name}}</view>
+    <view class="summary" wx:if="{{summary}}">{{summary}}</view>
+  </view>
+  <view class="chevron">&gt;</view>
+</navigator>

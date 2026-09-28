@@ -1,0 +1,9 @@
+{
+  "desc": "XX教育学习中心",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}

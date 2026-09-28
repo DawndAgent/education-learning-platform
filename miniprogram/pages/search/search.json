@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "搜索",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "loading-view": "/components/loading/loading",
+    "empty-view": "/components/empty/empty",
+    "error-view": "/components/error/error",
+    "content-card": "/components/content-card/content-card"
+  }
+}

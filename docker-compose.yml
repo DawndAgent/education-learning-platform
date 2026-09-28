@@ -1,0 +1,45 @@
+# 仅用于本机开发。默认口令不可用于生产环境。
+# 表结构由应用启动时的 Flyway 执行，不在容器初始化时重复建表。
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: education_learning
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  redis:
+    image: redis:7.4
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: "jdbc:mysql://mysql:3306/education_learning?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false"
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      REDIS_HOST: redis
+      JWT_SECRET: change-me-dev-only-jwt-secret-32bytes
+    volumes:
+      - ./data/uploads:/app/data/uploads
+    depends_on:
+      - mysql
+      - redis
+
+volumes:
+  mysql-data:
+  redis-data:

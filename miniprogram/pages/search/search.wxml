@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="search-bar">
+    <input
+      class="search-input"
+      type="text"
+      confirm-type="search"
+      placeholder="搜索内容标题"
+      maxlength="64"
+      value="{{inputValue}}"
+      bindinput="onInput"
+      bindconfirm="onConfirm"
+    />
+    <view class="search-btn" bindtap="onSearchTap">搜索</view>
+  </view>
+
+  <block wx:if="{{!searched}}">
+    <view class="history" wx:if="{{history.length > 0}}">
+      <view class="history-head">
+        <text>最近搜索</text>
+        <text class="clear" bindtap="onClearHistory">清空</text>
+      </view>
+      <view class="history-list">
+        <view
+          class="history-item"
+          wx:for="{{history}}"
+          wx:key="*this"
+          data-keyword="{{item}}"
+          bindtap="onHistoryTap"
+        >{{item}}</view>
+      </view>
+    </view>
+    <empty-view message="请输入搜索关键词" />
+  </block>
+
+  <block wx:else>
+    <loading-view wx:if="{{status === 'loading' && items.length === 0}}" message="搜索中..." />
+    <error-view
+      wx:elif="{{status === 'error' && items.length === 0}}"
+      message="{{message}}"
+      button-text="重新加载"
+      bind:retry="retrySearch"
+    />
+    <empty-view wx:elif="{{status === 'empty'}}" message="{{message || '暂无相关内容'}}" />
+    <block wx:else>
+      <view class="hint">共 {{total}} 条结果</view>
+      <content-card
+        wx:for="{{items}}"
+        wx:key="id"
+        title="{{item.title}}"
+        cover-url="{{item.coverUrl}}"
+        type-label="{{item.typeLabel}}"
+        summary="{{item.summary}}"
+        date-text="{{item.dateText}}"
+        url="{{item.url}}"
+        layout="stack"
+      />
+      <view class="footer" wx:if="{{loadingMore}}">正在加载...</view>
+      <view class="footer error" wx:elif="{{moreError}}">{{moreError}}</view>
+      <view class="footer" wx:elif="{{!hasMore}}">没有更多内容</view>
+    </block>
+  </block>
+</view>

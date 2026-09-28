@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="title" wx:if="{{name}}">{{name}}</view>
+  <loading-view wx:if="{{status === 'loading'}}" message="加载中..." />
+  <error-view wx:elif="{{status === 'error'}}" message="{{message}}" bind:retry="loadCategory" />
+  <empty-view wx:elif="{{status === 'empty'}}" message="{{message}}" />
+  <block wx:else>
+    <view class="section" wx:if="{{children.length > 0}}">子栏目</view>
+    <navigator class="child" wx:for="{{children}}" wx:key="id" url="{{item.url}}">
+      <view class="child-name">{{item.name}}</view>
+      <view class="chevron">&gt;</view>
+    </navigator>
+
+    <view class="section">最新内容</view>
+    <loading-view wx:if="{{latestStatus === 'loading'}}" message="加载中..." />
+    <error-view
+      wx:elif="{{latestStatus === 'error'}}"
+      message="{{latestError}}"
+      bind:retry="loadCategory"
+    />
+    <empty-view wx:elif="{{latestStatus === 'empty'}}" message="暂无内容" />
+    <block wx:else>
+      <content-card
+        wx:for="{{latest}}"
+        wx:key="id"
+        title="{{item.title}}"
+        cover-url="{{item.coverUrl}}"
+        type-label="{{item.typeLabel}}"
+        meta="{{item.meta}}"
+        summary="{{item.summary}}"
+        date-text="{{item.dateText}}"
+        url="{{item.url}}"
+      />
+    </block>
+  </block>
+</view>

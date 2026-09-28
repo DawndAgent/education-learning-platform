@@ -1,0 +1,24 @@
+<view class="page">
+  <loading-view wx:if="{{status === 'loading' && cards.length === 0}}" message="加载中..." />
+  <error-view
+    wx:elif="{{status === 'error' && cards.length === 0}}"
+    message="{{message}}"
+    button-text="重新加载"
+    bind:retry="loadFirst"
+  />
+  <empty-view wx:elif="{{status === 'empty'}}" message="暂无专题" />
+  <block wx:else>
+    <navigator class="topic-card" wx:for="{{cards}}" wx:key="id" url="{{item.url}}">
+      <image wx:if="{{item.coverUrl}}" class="cover" src="{{item.coverUrl}}" mode="aspectFill" />
+      <view wx:else class="cover cover-fallback">暂无封面</view>
+      <view class="body">
+        <view class="name">{{item.name}}</view>
+        <view class="meta" wx:if="{{item.meta}}">{{item.meta}}</view>
+        <view class="summary" wx:if="{{item.summary}}">{{item.summary}}</view>
+      </view>
+    </navigator>
+    <view class="footer" wx:if="{{loadingMore}}">正在加载...</view>
+    <view class="footer error" wx:elif="{{moreError}}">{{moreError}}</view>
+    <view class="footer" wx:elif="{{!hasMore}}">没有更多内容</view>
+  </block>
+</view>

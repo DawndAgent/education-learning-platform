@@ -1,0 +1,16 @@
+.message,
+.footer {
+  padding: 32rpx 0;
+  color: #8f959e;
+  text-align: center;
+}
+
+.footer.error {
+  color: #646a73;
+}
+
+.back {
+  margin-top: 16rpx;
+  color: #2f6f62;
+  text-align: center;
+}

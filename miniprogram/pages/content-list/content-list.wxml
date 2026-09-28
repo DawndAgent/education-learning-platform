@@ -1,0 +1,37 @@
+<view class="page">
+  <block wx:if="{{status === 'loading' && items.length === 0}}">
+    <loading-view message="加载中..." />
+  </block>
+
+  <block wx:elif="{{status === 'error' && items.length === 0}}">
+    <error-view wx:if="{{canRetry}}" message="{{message}}" button-text="重新加载" bind:retry="loadFirst" />
+    <view wx:else class="message">{{message}}</view>
+    <view class="back" bindtap="goBack">返回</view>
+  </block>
+
+  <block wx:elif="{{status === 'empty'}}">
+    <view class="title" wx:if="{{categoryName}}">{{categoryName}}</view>
+    <empty-view message="暂无内容" />
+    <view class="back" bindtap="loadFirst">重新加载</view>
+    <view class="back" bindtap="goBack">返回上一页</view>
+  </block>
+
+  <block wx:else>
+    <view class="title">{{categoryName}}</view>
+    <view class="hint">共 {{total}} 条内容</view>
+    <content-card
+      wx:for="{{items}}"
+      wx:key="id"
+      title="{{item.title}}"
+      cover-url="{{item.coverUrl}}"
+      type-label="{{item.typeLabel}}"
+      summary="{{item.summary}}"
+      date-text="{{item.dateText}}"
+      url="{{item.url}}"
+      layout="stack"
+    />
+    <view class="footer" wx:if="{{loadingMore}}">正在加载...</view>
+    <view class="footer error" wx:elif="{{moreError}}">{{moreError}}</view>
+    <view class="footer" wx:elif="{{!hasMore}}">没有更多内容</view>
+  </block>
+</view>

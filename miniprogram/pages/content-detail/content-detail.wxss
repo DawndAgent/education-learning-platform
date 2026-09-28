@@ -1,0 +1,151 @@
+.back {
+  color: #2f6f62;
+}
+
+.message {
+  padding: 48rpx 0;
+  color: #646a73;
+  text-align: center;
+}
+
+.meta,
+.summary,
+.source,
+.hint {
+  margin-top: 12rpx;
+  color: #646a73;
+}
+
+.title {
+  margin-top: 24rpx;
+}
+
+.week-label {
+  margin-top: 12rpx;
+  color: #2f6f62;
+  font-weight: 600;
+}
+
+.cover {
+  display: block;
+  width: 100%;
+  margin-top: 24rpx;
+  border-radius: 16rpx;
+  background: #eef2f6;
+}
+
+.video-cover {
+  height: 360rpx;
+}
+
+.cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 360rpx;
+  color: #8f959e;
+}
+
+.source {
+  color: #2f6f62;
+  font-weight: 600;
+}
+
+.body {
+  display: block;
+  margin-top: 28rpx;
+  overflow: hidden;
+  font-size: 30rpx;
+  line-height: 1.8;
+  word-break: break-word;
+}
+
+.qr {
+  display: block;
+  width: 320rpx;
+  height: 320rpx;
+  margin: 32rpx auto 0;
+  background: #ffffff;
+}
+
+.section-title {
+  margin-top: 32rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.question-text {
+  margin-top: 16rpx;
+  font-size: 30rpx;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.media {
+  display: block;
+  width: 100%;
+  margin-top: 16rpx;
+  border-radius: 12rpx;
+  background: #eef2f6;
+}
+
+.fold {
+  margin-top: 24rpx;
+  padding: 20rpx 24rpx;
+  color: #2f6f62;
+  background: #ffffff;
+  border-radius: 12rpx;
+  font-weight: 600;
+}
+
+.fold-body {
+  margin-top: 8rpx;
+  padding: 20rpx 24rpx;
+  background: #ffffff;
+  border-radius: 12rpx;
+}
+
+.doc-card {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+}
+
+.doc-row {
+  margin-top: 12rpx;
+  color: #646a73;
+  word-break: break-word;
+}
+
+.doc-row:first-child {
+  margin-top: 0;
+  color: #1f2329;
+  font-weight: 600;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.doc-btn {
+  flex: 1;
+  margin: 0;
+  color: #ffffff;
+  background: #2f6f62;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+
+.doc-btn-secondary {
+  color: #2f6f62;
+  background: #ffffff;
+  border: 1rpx solid #2f6f62;
+}
+
+.doc-btn::after {
+  border: none;
+}

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "内容详情",
+  "enableShareAppMessage": true,
+  "usingComponents": {
+    "loading-view": "/components/loading/loading",
+    "error-view": "/components/error/error"
+  }
+}
+

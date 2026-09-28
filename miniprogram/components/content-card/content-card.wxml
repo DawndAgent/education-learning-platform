@@ -1,0 +1,19 @@
+<navigator class="card {{layout === 'stack' ? 'card-stack' : ''}}" url="{{url}}">
+  <image
+    wx:if="{{coverUrl && !coverFailed}}"
+    class="cover"
+    src="{{coverUrl}}"
+    mode="aspectFill"
+    binderror="onCoverError"
+  />
+  <view wx:else class="cover cover-fallback">暂无封面</view>
+  <view class="body">
+    <view class="title">{{title}}</view>
+    <view class="meta">
+      <text wx:if="{{typeLabel}}" class="tag">{{typeLabel}}</text>
+      <text wx:if="{{meta}}">{{meta}}</text>
+    </view>
+    <view class="summary" wx:if="{{summary}}">{{summary}}</view>
+    <view class="date" wx:if="{{dateText}}">{{dateText}}</view>
+  </view>
+</navigator>

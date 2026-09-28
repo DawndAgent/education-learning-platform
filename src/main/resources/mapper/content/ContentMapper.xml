@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xxedu.learning.modules.content.mapper.ContentMapper">
+
+    <select id="selectContentPage" resultType="com.xxedu.learning.modules.content.entity.Content">
+        SELECT ct.id,
+               ct.title,
+               ct.content_type,
+               ct.category_id,
+               ct.cover_url,
+               ct.summary,
+               ct.status,
+               ct.sort,
+               ct.view_count,
+               ct.favorite_count,
+               ct.publish_time,
+               ct.scheduled_publish_time,
+               ct.created_at,
+               ct.updated_at
+        FROM content ct
+                 LEFT JOIN category cg ON cg.id = ct.category_id AND cg.deleted = 0
+        WHERE ct.deleted = 0
+        <if test="query.categoryIds != null">
+            AND ct.category_id IN
+            <foreach collection="query.categoryIds" item="categoryId" open="(" separator="," close=")">
+                #{categoryId}
+            </foreach>
+        </if>
+        <if test="query.contentType != null">
+            AND ct.content_type = #{query.contentType}
+        </if>
+        <if test="query.status != null">
+            AND ct.status = #{query.status}
+        </if>
+        <if test="query.keywordPattern != null">
+            AND ct.title LIKE #{query.keywordPattern} ESCAPE '!'
+        </if>
+        <if test="query.publishTimeFrom != null">
+            AND ct.publish_time &gt;= #{query.publishTimeFrom}
+        </if>
+        <if test="query.publishTimeTo != null">
+            AND ct.publish_time &lt;= #{query.publishTimeTo}
+        </if>
+        <if test="query.scheduleFilter == 'PLAIN'">
+            AND ct.scheduled_publish_time IS NULL
+        </if>
+        <if test="query.scheduleFilter == 'SCHEDULED'">
+            AND ct.status = 'DRAFT'
+            AND ct.scheduled_publish_time IS NOT NULL
+        </if>
+        <choose>
+            <when test="query.orderByPublishTime">
+                ORDER BY ct.publish_time DESC, ct.id DESC
+            </when>
+            <otherwise>
+                ORDER BY cg.sort ASC, cg.id ASC, ct.sort ASC, ct.publish_time DESC, ct.id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectDueDrafts" resultType="com.xxedu.learning.modules.content.mapper.ContentDueRow">
+        SELECT ct.id,
+               ct.content_type,
+               ct.scheduled_publish_time
+        FROM content ct
+        WHERE ct.deleted = 0
+          AND ct.status = 'DRAFT'
+          AND ct.scheduled_publish_time IS NOT NULL
+          AND ct.scheduled_publish_time &lt;= #{now}
+        ORDER BY ct.scheduled_publish_time ASC, ct.id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="countScheduledDrafts" resultType="long">
+        SELECT COUNT(*)
+        FROM content ct
+        WHERE ct.deleted = 0
+          AND ct.status = 'DRAFT'
+          AND ct.scheduled_publish_time IS NOT NULL
+    </select>
+
+    <update id="publishFromDraft">
+        UPDATE content
+        SET status = 'PUBLISHED',
+            publish_time = #{publishTime},
+            scheduled_publish_time = NULL,
+            updated_at = #{publishTime}
+        WHERE id = #{id}
+          AND status = 'DRAFT'
+          AND deleted = 0
+    </update>
+
+    <update id="publishFromOffline">
+        UPDATE content
+        SET status = 'PUBLISHED',
+            publish_time = #{publishTime},
+            scheduled_publish_time = NULL,
+            updated_at = #{publishTime}
+        WHERE id = #{id}
+          AND status = 'OFFLINE'
+          AND deleted = 0
+    </update>
+
+    <update id="clearScheduledPublishTime">
+        UPDATE content
+        SET scheduled_publish_time = NULL,
+            updated_at = #{now}
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <update id="incrementViewCount">
+        UPDATE content
+        SET view_count = view_count + 1
+        WHERE id = #{id}
+          AND status = 'PUBLISHED'
+          AND deleted = 0
+    </update>
+
+    <select id="countGroupByStatus" resultType="com.xxedu.learning.modules.content.mapper.ContentCountRow">
+        SELECT ct.status AS `key`,
+               COUNT(*) AS `count`
+        FROM content ct
+        WHERE ct.deleted = 0
+        GROUP BY ct.status
+    </select>
+
+    <select id="countGroupByContentType" resultType="com.xxedu.learning.modules.content.mapper.ContentCountRow">
+        SELECT ct.content_type AS `key`,
+               COUNT(*) AS `count`
+        FROM content ct
+        WHERE ct.deleted = 0
+        GROUP BY ct.content_type
+    </select>
+
+    <select id="countCreatedBetween" resultType="long">
+        SELECT COUNT(*)
+        FROM content ct
+        WHERE ct.deleted = 0
+          AND ct.created_at &gt;= #{from}
+          AND ct.created_at &lt; #{to}
+    </select>
+
+    <select id="countGroupByRootCategory"
+            resultType="com.xxedu.learning.modules.content.mapper.ContentCategoryCountRow">
+        SELECT CASE
+                   WHEN cg.parent_id IS NULL OR cg.parent_id = 0 THEN cg.id
+                   ELSE cg.parent_id
+                   END AS category_id,
+               COUNT(*) AS `count`
+        FROM content ct
+                 INNER JOIN category cg ON cg.id = ct.category_id AND cg.deleted = 0
+        WHERE ct.deleted = 0
+        GROUP BY CASE
+                     WHEN cg.parent_id IS NULL OR cg.parent_id = 0 THEN cg.id
+                     ELSE cg.parent_id
+                     END
+        ORDER BY `count` DESC, category_id ASC
+    </select>
+
+    <select id="selectRecentPublished" resultType="com.xxedu.learning.modules.content.mapper.ContentRecentRow">
+        SELECT ct.id,
+               ct.title,
+               ct.content_type,
+               cg.name AS category_name,
+               ct.publish_time
+        FROM content ct
+                 LEFT JOIN category cg ON cg.id = ct.category_id AND cg.deleted = 0
+        WHERE ct.deleted = 0
+          AND ct.status = 'PUBLISHED'
+        ORDER BY ct.publish_time DESC, ct.id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

@@ -1,0 +1,13 @@
+{
+  "name": "education-learning-platform-miniprogram",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "check": "node scripts/check-miniprogram.mjs",
+    "test:mp": "node --test tests/sprint-03b.test.mjs tests/sprint-03c.test.mjs tests/sprint-03d.test.mjs tests/sprint-05.test.mjs tests/sprint-07-topic.test.mjs"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "^4.1.0",
+    "typescript": "^5.6.3"
+  }
+}
