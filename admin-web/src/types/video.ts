@@ -1,4 +1,4 @@
-export type VideoSourceType = 'WECHAT_CHANNEL' | 'TENCENT_VIDEO'
+export type VideoSourceType = 'WECHAT_CHANNEL' | 'TENCENT_VIDEO' | 'LOCAL'
 
 export interface VideoDetail {
   contentId: string
@@ -26,4 +26,11 @@ export interface VideoPayload {
   videoUrl: string
   qrCodeUrl: string
   duration: number | null
+}
+
+export interface MiniprogramQr {
+  contentId: string
+  title: string
+  url: string
+  mocked: boolean
 }

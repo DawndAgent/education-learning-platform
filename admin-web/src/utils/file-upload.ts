@@ -1,7 +1,9 @@
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024
+export const MAX_VIDEO_BYTES = 50 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 const ALLOWED_DOCUMENT_EXTENSIONS = new Set(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'])
+const ALLOWED_VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime', ''])
 
 export function validateImageFile(file: { size: number; type: string }, maxBytes = MAX_IMAGE_BYTES): string | null {
   if (!file || file.size <= 0) {
@@ -39,6 +41,42 @@ export function validateDocumentFile(
   const extension = documentExtension(file.name)
   if (!ALLOWED_DOCUMENT_EXTENSIONS.has(extension)) {
     return '仅支持 PDF、DOC、DOCX、XLS、XLSX、PPT、PPTX 文件'
+  }
+  return null
+}
+
+export function validatePdfFile(
+  file: { name: string; size: number },
+  maxBytes = MAX_DOCUMENT_BYTES,
+): string | null {
+  if (!file || file.size <= 0) {
+    return '文件不能为空'
+  }
+  if (file.size > maxBytes) {
+    return '文件大小不能超过20MB'
+  }
+  if (documentExtension(file.name) !== 'pdf') {
+    return '题目导入仅支持 PDF 文件'
+  }
+  return null
+}
+
+export function validateVideoFile(
+  file: { name: string; size: number; type: string },
+  maxBytes = MAX_VIDEO_BYTES,
+): string | null {
+  if (!file || file.size <= 0) {
+    return '文件不能为空'
+  }
+  if (file.size > maxBytes) {
+    return '视频大小不能超过50MB'
+  }
+  const extension = documentExtension(file.name)
+  if (extension !== 'mp4') {
+    return '仅支持 MP4 视频'
+  }
+  if (file.type && !ALLOWED_VIDEO_TYPES.has(file.type)) {
+    return '仅支持 MP4 视频'
   }
   return null
 }

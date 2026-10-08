@@ -1,0 +1,81 @@
+# 生产单机编排：MySQL + Redis + API + Nginx（托管 admin 静态包）。
+# 用法见 docs/deploy-prod.md
+#   cp deploy/.env.example deploy/.env
+#   docker compose --env-file deploy/.env -f docker-compose.prod.yml up -d --build
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in deploy/.env}
+      MYSQL_DATABASE: education_learning
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    volumes:
+      - mysql-prod-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-prod-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://mysql:3306/education_learning?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in deploy/.env}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in deploy/.env}
+      ADMIN_ORIGIN: ${ADMIN_ORIGIN:?set ADMIN_ORIGIN in deploy/.env}
+      COS_SECRET_ID: ${COS_SECRET_ID:?set COS_SECRET_ID in deploy/.env}
+      COS_SECRET_KEY: ${COS_SECRET_KEY:?set COS_SECRET_KEY in deploy/.env}
+      COS_REGION: ${COS_REGION:?set COS_REGION in deploy/.env}
+      COS_BUCKET: ${COS_BUCKET:?set COS_BUCKET in deploy/.env}
+      COS_PUBLIC_BASE_URL: ${COS_PUBLIC_BASE_URL:?set COS_PUBLIC_BASE_URL in deploy/.env}
+      WECHAT_MINIAPP_APP_ID: ${WECHAT_MINIAPP_APP_ID:-}
+      WECHAT_MINIAPP_APP_SECRET: ${WECHAT_MINIAPP_APP_SECRET:-}
+      WECHAT_MINIAPP_ENV_VERSION: ${WECHAT_MINIAPP_ENV_VERSION:-release}
+      WECHAT_MINIAPP_MOCK: ${WECHAT_MINIAPP_MOCK:-false}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    expose:
+      - "8080"
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/admin-dist:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+
+volumes:
+  mysql-prod-data:
+  redis-prod-data:

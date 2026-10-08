@@ -32,6 +32,7 @@ const imageUpload = fs.readFileSync(path.resolve('src/components/ImageUpload.vue
 const editor = fs.readFileSync(path.resolve('src/components/RichTextEditor.vue'), 'utf8')
 const articlePage = fs.readFileSync(path.resolve('src/views/articles/editor.vue'), 'utf8')
 const videoPage = fs.readFileSync(path.resolve('src/views/videos/editor.vue'), 'utf8')
+const videoFileUpload = fs.readFileSync(path.resolve('src/components/VideoFileUpload.vue'), 'utf8')
 
 test('前端图片上传校验', () => {
   assert.equal(fileUpload.validateImageFile({ size: 0, type: 'image/png' }), '文件不能为空')
@@ -42,6 +43,12 @@ test('前端图片上传校验', () => {
   assert.equal(media.isMediaUrl('https://example.com/a.png'), true)
   assert.equal(media.isMediaUrl('../x.png'), false)
   assert.equal(video.canPreviewQr('/uploads/qr.png'), true)
+  assert.equal(fileUpload.validateVideoFile({ name: 'a.mp4', size: 10, type: 'video/mp4' }), null)
+  assert.equal(fileUpload.validateVideoFile({ name: 'a.mov', size: 10, type: 'video/quicktime' }), '仅支持 MP4 视频')
+  assert.equal(fileUpload.validateVideoFile({ name: 'a.mp4', size: 51 * 1024 * 1024, type: 'video/mp4' }), '视频大小不能超过50MB')
+  assert.equal(fileUpload.validatePdfFile({ name: 'a.pdf', size: 10 }), null)
+  assert.equal(fileUpload.validatePdfFile({ name: 'a.docx', size: 10 }), '题目导入仅支持 PDF 文件')
+  assert.equal(fileUpload.validatePdfFile({ name: 'a.pdf', size: 21 * 1024 * 1024 }), '文件大小不能超过20MB')
   assert.equal(video.validateVideoPublish({
     title: '听力课',
     categoryId: '11',
@@ -66,7 +73,11 @@ test('上传组件和编辑器接入上传接口', () => {
   assert.match(editor, /fileApi\.uploadImage/)
   assert.match(articlePage, /ImageUpload/)
   assert.match(articlePage, /scene="COVER"/)
+  assert.match(fileApiSource, /uploadVideo/)
+  assert.match(fileApiSource, /VIDEO_FILE/)
   assert.match(videoPage, /scene="VIDEO"/)
   assert.match(videoPage, /scene="QRCODE"/)
+  assert.match(videoFileUpload, /fileApi\.uploadVideo/)
+  assert.match(videoFileUpload, /accept="video\/mp4,.mp4"/)
   assert.equal(imageUpload.includes("from 'axios'"), false)
 })

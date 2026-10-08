@@ -116,6 +116,12 @@ const router = createRouter({
           meta: { title: '新增题目', permissions: ['CONTENT_CREATE'] },
         },
         {
+          path: 'questions/import-pdf',
+          name: 'question-import-pdf',
+          component: () => import('@/views/questions/import-pdf.vue'),
+          meta: { title: '从 PDF 导入', permissions: ['CONTENT_CREATE'] },
+        },
+        {
           path: 'questions/:id',
           name: 'question-editor',
           component: () => import('@/views/questions/editor.vue'),

@@ -25,6 +25,10 @@ app:
   jwt:
     # 仅用于本地开发。生产环境必须通过 JWT_SECRET 注入独立密钥，不能使用这个默认值。
     secret: ${JWT_SECRET:change-me-dev-only-jwt-secret-32bytes}
+  wechat:
+    miniapp:
+      # 本地默认 mock；配置了真实密钥后可设 WECHAT_MINIAPP_MOCK=false
+      mock-enabled: ${WECHAT_MINIAPP_MOCK:true}
 
 logging:
   level:

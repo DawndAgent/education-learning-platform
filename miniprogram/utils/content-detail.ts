@@ -9,6 +9,7 @@ import type {
 import type { CategoryVO } from '../types/category'
 import { ApiError, toErrorMessage } from './error'
 import { formatPublishDate } from './content-view'
+import { resolveMediaUrl } from './media-url'
 
 export type DetailStatus = 'loading' | 'success' | 'error' | 'unsupported'
 export type DetailKind = '' | 'article' | 'video' | 'question' | 'weekly' | 'document'
@@ -37,6 +38,7 @@ export interface DetailView {
   bodyHtml: string
   sourceLabel: string
   qrCodeUrl: string
+  playUrl: string
   watchHint: string
   durationText: string
   categoryText: string
@@ -59,6 +61,7 @@ export interface DetailView {
 }
 
 const SOURCE_LABELS: Record<string, string> = {
+  LOCAL: '平台内播放',
   WECHAT_CHANNEL: '微信视频号观看',
   TENCENT_VIDEO: '腾讯视频观看'
 }
@@ -179,6 +182,7 @@ export function blankDetail(): DetailView {
     bodyHtml: '',
     sourceLabel: '',
     qrCodeUrl: '',
+    playUrl: '',
     watchHint: '',
     durationText: '',
     categoryText: '',
@@ -281,25 +285,27 @@ function presentArticle(article: ArticleDetailVO): DetailView {
     author: article.author || '',
     source: article.source || '',
     dateText: formatPublishDate(article.publishTime),
-    coverUrl: article.coverUrl || '',
+    coverUrl: resolveMediaUrl(article.coverUrl || ''),
     summary: article.summary || '',
     bodyHtml: prepareArticleHtml(article.body)
   }
 }
 
 function presentVideo(content: ContentDetailVO, video: VideoDetailVO): DetailView {
-  const qrCodeUrl = video.qrCodeUrl || ''
+  const qrCodeUrl = resolveMediaUrl(video.qrCodeUrl || '')
+  const playUrl = video.sourceType === 'LOCAL' ? resolveMediaUrl(video.videoUrl || '') : ''
   return {
     ...blankDetail(),
     status: 'success',
     kind: 'video',
     title: video.title || content.title,
     dateText: formatPublishDate(video.publishTime || content.publishTime),
-    coverUrl: video.coverUrl || content.coverUrl || '',
+    coverUrl: resolveMediaUrl(video.coverUrl || content.coverUrl || ''),
     summary: video.summary || content.summary || '',
     sourceLabel: sourceLabel(video.sourceType),
     qrCodeUrl,
-    watchHint: qrCodeUrl ? '扫码观看完整视频' : '请扫码观看完整视频',
+    playUrl,
+    watchHint: playUrl ? '' : (qrCodeUrl ? '扫码观看完整视频' : '请扫码观看完整视频'),
     durationText: formatDuration(video.duration)
   }
 }
@@ -316,14 +322,14 @@ function presentQuestion(question: QuestionDetailVO, categoryText: string): Deta
     title: question.title,
     categoryText,
     dateText: formatPublishDate(question.publishTime),
-    coverUrl: question.coverUrl || '',
+    coverUrl: resolveMediaUrl(question.coverUrl || ''),
     summary: question.summary || '',
     questionText: question.questionText || '',
-    questionImageUrl: question.questionImageUrl || '',
+    questionImageUrl: resolveMediaUrl(question.questionImageUrl || ''),
     answerText,
-    answerImageUrl,
+    answerImageUrl: resolveMediaUrl(answerImageUrl),
     analysisText,
-    analysisImageUrl,
+    analysisImageUrl: resolveMediaUrl(analysisImageUrl),
     hasAnswer: Boolean(answerText || answerImageUrl),
     hasAnalysis: Boolean(analysisText || analysisImageUrl)
   }
@@ -342,14 +348,14 @@ function presentWeekly(weekly: WeeklyDetailVO, categoryText: string): DetailView
     categoryText,
     weekLabel: weekly.weekLabel || '',
     dateText: formatPublishDate(weekly.publishTime),
-    coverUrl: weekly.coverUrl || '',
+    coverUrl: resolveMediaUrl(weekly.coverUrl || ''),
     summary: weekly.summary || '',
     questionText: weekly.questionText || '',
-    questionImageUrl: weekly.questionImageUrl || '',
+    questionImageUrl: resolveMediaUrl(weekly.questionImageUrl || ''),
     answerText,
-    answerImageUrl,
+    answerImageUrl: resolveMediaUrl(answerImageUrl),
     analysisText,
-    analysisImageUrl,
+    analysisImageUrl: resolveMediaUrl(analysisImageUrl),
     hasAnswer: Boolean(answerText || answerImageUrl),
     hasAnalysis: Boolean(analysisText || analysisImageUrl)
   }
@@ -363,15 +369,15 @@ function presentDocument(document: DocumentDetailVO, categoryText: string): Deta
     title: document.title,
     categoryText,
     dateText: formatPublishDate(document.publishTime),
-    coverUrl: document.coverUrl || '',
+    coverUrl: resolveMediaUrl(document.coverUrl || ''),
     summary: document.summary || '',
     fileName: document.fileName || '',
     fileSizeText: formatFileSize(document.fileSize),
     fileType: document.fileType || '',
     description: document.description || '',
-    previewUrl: document.previewUrl || '',
-    downloadUrl: document.downloadUrl || '',
-    fileUrl: document.fileUrl || ''
+    previewUrl: resolveMediaUrl(document.previewUrl || ''),
+    downloadUrl: resolveMediaUrl(document.downloadUrl || ''),
+    fileUrl: resolveMediaUrl(document.fileUrl || '')
   }
 }
 
@@ -427,7 +433,31 @@ function sanitizeHtml(html: string): string {
     .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, '')
     .replace(/(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, '$1=$2$2')
   return withoutEvents.replace(/<img\b([^>]*?)\/?>/gi, (_match, attrs: string) => {
-    const cleaned = attrs.replace(/\sstyle\s*=\s*(['"])[\s\S]*?\1/gi, '')
-    return `<img${cleaned} style="max-width:100%;height:auto;display:block;">`
+    const width = extractCssLength(attrs, 'width')
+    const marginLeft = extractCssLength(attrs, 'margin-left')
+    const marginTop = extractCssLength(attrs, 'margin-top')
+    const cleaned = attrs
+      .replace(/\sstyle\s*=\s*(['"])[\s\S]*?\1/gi, '')
+      .replace(/(src)\s*=\s*(['"])([^'"]*)\2/gi, (_srcMatch: string, attr: string, quote: string, value: string) => {
+        return `${attr}=${quote}${resolveMediaUrl(value)}${quote}`
+      })
+    const size = width ? `width:${width};` : ''
+    const offset = `${marginLeft ? `margin-left:${marginLeft};` : ''}${marginTop ? `margin-top:${marginTop};` : ''}`
+    return `<img${cleaned} style="${size}${offset}max-width:100%;height:auto;display:block;">`
   })
+}
+
+function extractCssLength(attrs: string, prop: string): string {
+  const styleMatch = attrs.match(/\sstyle\s*=\s*(['"])([\s\S]*?)\1/i)
+  if (!styleMatch) {
+    return ''
+  }
+  const re = new RegExp(`${prop}\\s*:\\s*([^;]+)`, 'i')
+  const matched = styleMatch[2].match(re)
+  if (!matched) {
+    return ''
+  }
+  const value = matched[1].trim()
+  // 仅保留安全的长度值，避免注入
+  return /^-?\d+(\.\d+)?(px|%|em|rem|vw)?$/i.test(value) ? value : ''
 }

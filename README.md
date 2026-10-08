@@ -52,6 +52,8 @@ docker compose up -d
 mvnw.cmd spring-boot:run
 ```
 
+生产部署（腾讯云 COS + Docker Compose）见 [docs/deploy-prod.md](docs/deploy-prod.md)。
+
 - 健康检查：`GET http://localhost:8080/api/health`
 - Swagger UI：`http://localhost:8080/swagger-ui.html`
 

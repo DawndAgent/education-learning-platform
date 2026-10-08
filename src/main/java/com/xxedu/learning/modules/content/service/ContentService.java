@@ -627,6 +627,16 @@ public class ContentService {
         if (video.getVideoUrl() == null || video.getVideoUrl().isBlank()) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "视频地址不能为空");
         }
+        if (video.getSourceType().inAppPlayback()) {
+            if (!HttpUrls.isMediaUrl(video.getVideoUrl())) {
+                throw new BusinessException(ErrorCode.BAD_REQUEST, "视频地址不合法");
+            }
+            if (video.getQrCodeUrl() != null && !video.getQrCodeUrl().isBlank()
+                    && !HttpUrls.isMediaUrl(video.getQrCodeUrl())) {
+                throw new BusinessException(ErrorCode.BAD_REQUEST, "二维码地址不合法");
+            }
+            return;
+        }
         if (!HttpUrls.isHttp(video.getVideoUrl())) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "视频地址不合法");
         }

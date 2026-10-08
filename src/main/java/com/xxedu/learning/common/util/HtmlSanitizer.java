@@ -34,6 +34,7 @@ public final class HtmlSanitizer {
         Safelist list = Safelist.relaxed();
         list.preserveRelativeLinks(true);
         list.addAttributes(":all", "style", "class");
+        list.addAttributes("p", "data-video-id");
         list.addProtocols("a", "href", "http", "https", "mailto");
         list.addProtocols("img", "src", "http", "https");
         return list;

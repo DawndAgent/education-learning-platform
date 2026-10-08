@@ -144,7 +144,14 @@ watch(
         </p>
         <p v-if="video.summary" class="summary">{{ video.summary }}</p>
         <el-image v-if="coverUrl" :src="coverUrl" fit="contain" class="cover" />
-        <p v-if="video.videoUrl" class="link">视频地址：{{ video.videoUrl }}</p>
+        <video
+          v-if="video.sourceType === 'LOCAL' && video.videoUrl"
+          class="player"
+          :src="media(video.videoUrl)"
+          controls
+          preload="metadata"
+        />
+        <p v-else-if="video.videoUrl" class="link">视频地址：{{ video.videoUrl }}</p>
         <div v-if="qrUrl" class="qr">
           <p>二维码</p>
           <el-image :src="qrUrl" fit="contain" class="qr-image" />
@@ -258,6 +265,14 @@ watch(
   width: 100%;
   max-height: 280px;
   margin: 12px 0;
+}
+
+.player {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  margin: 12px 0;
+  background: #000;
 }
 
 .body :deep(img) {

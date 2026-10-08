@@ -61,7 +61,7 @@ function article(id) {
   }
 }
 
-function video(id, sourceType, qrCodeUrl, duration, coverUrl = null) {
+function video(id, sourceType, qrCodeUrl, duration, coverUrl = null, videoUrl = 'https://v.qq.com/x/page/example.html') {
   return {
     contentId: id,
     title: 'PET 听力精讲 01',
@@ -72,7 +72,7 @@ function video(id, sourceType, qrCodeUrl, duration, coverUrl = null) {
     sort: 1,
     publishTime: '2026-09-23T08:00:00',
     sourceType,
-    videoUrl: 'https://v.qq.com/x/page/example.html',
+    videoUrl,
     qrCodeUrl,
     duration
   }
@@ -184,6 +184,21 @@ test('ARTICLE 正常加载', async () => {
   assert.deepEqual(api.calls, [['content', '10001'], ['article', '10001']])
 })
 
+test('本地上传封面和正文图会拼成可访问地址', async () => {
+  const api = services({
+    content: () => Promise.resolve(content('10001', 'ARTICLE', '/uploads/images/covers/a.png')),
+    article: () => Promise.resolve({
+      ...article('10001'),
+      coverUrl: '/uploads/images/covers/a.png',
+      body: '<p>正文</p><img src="/uploads/images/articles/b.png">'
+    }),
+    video: () => Promise.reject(new Error('should not request video'))
+  })
+  const view = await detail.loadContentDetail('10001', api)
+  assert.equal(view.coverUrl, 'http://127.0.0.1:8080/uploads/images/covers/a.png')
+  assert.match(view.bodyHtml, /http:\/\/127\.0\.0\.1:8080\/uploads\/images\/articles\/b\.png/)
+})
+
 test('Article API 404', async () => {
   const api = services({
     content: () => Promise.resolve(content('10001', 'ARTICLE')),
@@ -213,6 +228,15 @@ test('HTML body 展示', async () => {
   assert.equal(html.includes('<script'), false)
   assert.equal(html.includes('onerror'), false)
   assert.match(html, /max-width:100%/)
+  const sized = detail.prepareArticleHtml('<img src="/uploads/q.png" style="width:180px;height:auto;">')
+  assert.match(sized, /width:180px/)
+  assert.match(sized, /max-width:100%/)
+  const moved = detail.prepareArticleHtml(
+    '<img src="/uploads/q.png" style="width:180px;margin-left:36px;margin-top:12px;">'
+  )
+  assert.match(moved, /margin-left:36px/)
+  assert.match(moved, /margin-top:12px/)
+  assert.match(moved, /width:180px/)
   const api = services({
     content: () => Promise.resolve(content('10001', 'ARTICLE')),
     article: () => Promise.resolve(article('10001')),
@@ -266,7 +290,20 @@ test('WECHAT_CHANNEL', () => {
 
 test('TENCENT_VIDEO', () => {
   assert.equal(detail.sourceLabel('TENCENT_VIDEO'), '腾讯视频观看')
+  assert.equal(detail.sourceLabel('LOCAL'), '平台内播放')
   assert.equal(detail.sourceLabel('OWN_STORAGE'), '暂不支持的播放来源')
+})
+
+test('本地上传视频可在小程序内播放', async () => {
+  const api = services({
+    content: () => Promise.resolve(content('20002', 'VIDEO', 'content-cover')),
+    article: () => Promise.reject(new Error('should not request article')),
+    video: () => Promise.resolve(video('20002', 'LOCAL', null, 12, null, '/uploads/videos/local/a.mp4'))
+  })
+  const view = await detail.loadContentDetail('20002', api)
+  assert.equal(view.playUrl, 'http://127.0.0.1:8080/uploads/videos/local/a.mp4')
+  assert.equal(view.watchHint, '')
+  assert.equal(view.sourceLabel, '平台内播放')
 })
 
 test('二维码为空', async () => {
@@ -329,6 +366,17 @@ test('从列表进入详情', () => {
   const card = contentList.toContentCard(record)
   assert.equal(card.url, contentView.contentDetailUrl('10001'))
   assert.equal(card.url, '/pages/content-detail/content-detail?id=10001')
+})
+
+test('小程序码 scene 解析为内容 ID', () => {
+  assert.equal(contentView.resolveContentIdFromQuery({ id: '10001' }), '10001')
+  assert.equal(contentView.resolveContentIdFromQuery({ scene: '10001' }), '10001')
+  assert.equal(contentView.resolveContentIdFromQuery({ scene: encodeURIComponent('10001') }), '10001')
+  assert.equal(contentView.resolveContentIdFromQuery({ scene: 'v=10001' }), '10001')
+  assert.equal(contentView.resolveContentIdFromQuery({ id: '9', scene: '10001' }), '9')
+  assert.equal(contentView.resolveContentIdFromQuery({}), '')
+  const detailSource = fs.readFileSync(path.resolve('miniprogram/pages/content-detail/content-detail.ts'), 'utf8')
+  assert.match(detailSource, /resolveContentIdFromQuery/)
 })
 
 test('返回列表', () => {

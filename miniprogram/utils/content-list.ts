@@ -2,6 +2,7 @@ import type { ContentListVO, ContentQuery, ContentType } from '../types/content'
 import { ApiError, toErrorMessage } from './error'
 import { isCategoryId } from './category-tree'
 import { contentDetailUrl, contentTypeLabel, formatPublishDate } from './content-view'
+import { resolveMediaUrl } from './media-url'
 
 export const LIST_PAGE_SIZE = 10
 
@@ -67,7 +68,7 @@ export function toContentCard(record: ContentListVO): ContentCardModel {
   return {
     id: record.id,
     title: record.title,
-    coverUrl: record.coverUrl || '',
+    coverUrl: resolveMediaUrl(record.coverUrl || ''),
     typeLabel: contentTypeLabel(record.contentType),
     summary: record.summary || '',
     dateText: formatPublishDate(record.publishTime),

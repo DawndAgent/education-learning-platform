@@ -26,18 +26,29 @@
 
   <block wx:elif="{{kind === 'video'}}">
     <view class="title">{{title}}</view>
-    <image wx:if="{{coverUrl}}" class="cover video-cover" src="{{coverUrl}}" mode="aspectFill" />
-    <view wx:else class="cover video-cover cover-fallback">暂无封面</view>
+    <video
+      wx:if="{{playUrl}}"
+      class="player"
+      src="{{playUrl}}"
+      poster="{{coverUrl}}"
+      controls
+      show-center-play-btn
+      object-fit="contain"
+    />
+    <block wx:else>
+      <image wx:if="{{coverUrl}}" class="cover video-cover" src="{{coverUrl}}" mode="aspectFill" />
+      <view wx:else class="cover video-cover cover-fallback">暂无封面</view>
+    </block>
     <view class="source" wx:if="{{sourceLabel}}">{{sourceLabel}}</view>
     <view class="summary" wx:if="{{summary}}">{{summary}}</view>
     <image
-      wx:if="{{qrCodeUrl}}"
+      wx:if="{{!playUrl && qrCodeUrl}}"
       class="qr"
       src="{{qrCodeUrl}}"
       mode="aspectFit"
       bindtap="previewQr"
     />
-    <view class="hint">{{watchHint}}</view>
+    <view class="hint" wx:if="{{watchHint}}">{{watchHint}}</view>
     <view class="meta" wx:if="{{durationText}}">时长：{{durationText}}</view>
     <view class="meta" wx:if="{{dateText}}">{{dateText}}</view>
   </block>

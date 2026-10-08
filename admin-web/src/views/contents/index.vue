@@ -422,6 +422,9 @@ onMounted(() => {
       <el-button v-if="showQuestionCreate" type="primary" :disabled="busy" @click="router.push('/questions/create')">
         新增题目
       </el-button>
+      <el-button v-if="showQuestionCreate" :disabled="busy" @click="router.push('/questions/import-pdf')">
+        从 PDF 导入
+      </el-button>
       <el-button v-if="showWeeklyCreate" type="primary" :disabled="busy" @click="router.push('/weeklies/create')">
         新增每周一题
       </el-button>

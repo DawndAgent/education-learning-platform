@@ -10,8 +10,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 10MB
-      max-request-size: 12MB
+      max-file-size: 50MB
+      max-request-size: 52MB
   sql:
     init:
       mode: never
@@ -64,6 +64,13 @@ app:
   id-generator:
     worker-id: ${WORKER_ID:1}
     datacenter-id: ${DATACENTER_ID:1}
+  wechat:
+    miniapp:
+      app-id: ${WECHAT_MINIAPP_APP_ID:}
+      app-secret: ${WECHAT_MINIAPP_APP_SECRET:}
+      env-version: ${WECHAT_MINIAPP_ENV_VERSION:release}
+      # 未配置 AppSecret 时自动走 mock；生产请配置密钥并保持 false
+      mock-enabled: ${WECHAT_MINIAPP_MOCK:false}
 
 content:
   publish:
@@ -75,6 +82,12 @@ storage:
   local:
     base-path: ./data/uploads
     public-url-prefix: /uploads
+  cos:
+    secret-id: ${COS_SECRET_ID:}
+    secret-key: ${COS_SECRET_KEY:}
+    region: ${COS_REGION:}
+    bucket: ${COS_BUCKET:}
+    public-base-url: ${COS_PUBLIC_BASE_URL:}
 
 logging:
   level:

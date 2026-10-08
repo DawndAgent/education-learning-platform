@@ -7,16 +7,20 @@ import { contentApi } from '@/api/content'
 import { videoApi } from '@/api/video'
 import ContentScheduleActions from '@/components/ContentScheduleActions.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
+import VideoFileUpload from '@/components/VideoFileUpload.vue'
 import { useUnsavedLeave } from '@/composables/useUnsavedLeave'
 import { useAuthStore } from '@/stores/auth'
 import type { Category } from '@/types/category'
 import type { ContentStatus } from '@/types/content'
+import type { FileUploadResult } from '@/types/file'
 import { normalizeTree } from '@/utils/category-form'
 import { categoryOptions, displayStatusLabel, formatTime, offlineConfirmText, publishActionLabel, publishConfirmText, saveSuccessMessage } from '@/utils/content-form'
 import { resolveMediaUrl } from '@/utils/media-url'
 import {
   canPreviewQr,
+  fileNameFromUrl,
   formatDuration,
+  isLocalSource,
   sourceTypeLabel,
   toVideoPayload,
   validateVideoForm,
@@ -50,11 +54,12 @@ const form = reactive<VideoFormValues>({
   coverUrl: '',
   summary: '',
   sort: 0,
-  sourceType: '',
+  sourceType: 'LOCAL',
   videoUrl: '',
   qrCodeUrl: '',
   duration: null,
 })
+const videoFileName = ref('')
 
 const rules: FormRules = {
   title: [{ required: true, message: '标题不能为空', trigger: 'blur' }],
@@ -75,6 +80,8 @@ const dirty = computed(() => snapshot.value !== '' && snapshot.value !== JSON.st
 const qrPreview = computed(() => (canPreviewQr(form.qrCodeUrl) ? resolveMediaUrl(form.qrCodeUrl, apiBase) : ''))
 const durationText = computed(() => formatDuration(form.duration))
 const sourceLabel = computed(() => (form.sourceType ? sourceTypeLabel(form.sourceType) : ''))
+const localSource = computed(() => isLocalSource(form.sourceType))
+const localPlayUrl = computed(() => (localSource.value && form.videoUrl ? resolveMediaUrl(form.videoUrl, apiBase) : ''))
 
 useUnsavedLeave(dirty)
 
@@ -109,10 +116,11 @@ async function load() {
     form.coverUrl = video.coverUrl ?? ''
     form.summary = video.summary ?? ''
     form.sort = video.sort
-    form.sourceType = video.sourceType ?? ''
     form.videoUrl = video.videoUrl ?? ''
     form.qrCodeUrl = video.qrCodeUrl ?? ''
     form.duration = video.duration
+    form.sourceType = video.sourceType ?? 'LOCAL'
+    videoFileName.value = fileNameFromUrl(form.videoUrl)
     status.value = video.status
     publishTime.value = video.publishTime
     scheduledPublishTime.value = video.scheduledPublishTime
@@ -232,11 +240,45 @@ async function onOffline() {
   }
 }
 
+function onLocalVideoUploaded(result: FileUploadResult, duration: number | null) {
+  form.videoUrl = result.url
+  videoFileName.value = result.fileName || fileNameFromUrl(result.url)
+  if (duration != null && (form.duration == null || form.duration === 0)) {
+    form.duration = duration
+  }
+}
+
+function clearLocalVideo() {
+  form.videoUrl = ''
+  videoFileName.value = ''
+}
+
 function openQr() {
   if (qrPreview.value) {
     qrViewer.value = true
   }
 }
+
+watch(
+  () => form.sourceType,
+  (next, prev) => {
+    if (!prev || next === prev) {
+      return
+    }
+    if (isLocalSource(next)) {
+      form.qrCodeUrl = ''
+      if (form.videoUrl && !form.videoUrl.startsWith('/')) {
+        form.videoUrl = ''
+        videoFileName.value = ''
+      }
+      return
+    }
+    if (form.videoUrl.startsWith('/')) {
+      form.videoUrl = ''
+      videoFileName.value = ''
+    }
+  },
+)
 
 watch(
   () => [route.name, route.params.id] as const,
@@ -303,17 +345,27 @@ onMounted(() => {
       </el-form-item>
       <el-form-item label="视频来源" prop="sourceType">
         <el-select v-model="form.sourceType" placeholder="请选择视频来源">
+          <el-option label="本地上传" value="LOCAL" />
           <el-option label="微信视频号" value="WECHAT_CHANNEL" />
           <el-option label="腾讯视频" value="TENCENT_VIDEO" />
         </el-select>
       </el-form-item>
-      <el-form-item label="视频地址">
+      <el-form-item v-if="localSource" label="视频文件">
+        <VideoFileUpload
+          :file-url="form.videoUrl"
+          :file-name="videoFileName"
+          :disabled="!canSave"
+          @success="onLocalVideoUploaded"
+          @clear="clearLocalVideo"
+        />
+      </el-form-item>
+      <el-form-item v-else label="视频地址">
         <el-input v-model="form.videoUrl" maxlength="512" placeholder="https://" />
       </el-form-item>
       <el-form-item label="封面">
         <ImageUpload v-model="form.coverUrl" scene="VIDEO" :disabled="!canSave" />
       </el-form-item>
-      <el-form-item label="二维码">
+      <el-form-item v-if="!localSource" label="二维码">
         <ImageUpload v-model="form.qrCodeUrl" scene="QRCODE" :disabled="!canSave" />
         <div v-if="qrPreview" class="qr-box">
           <el-button link type="primary" @click="openQr">查看二维码</el-button>
@@ -334,7 +386,8 @@ onMounted(() => {
       <div class="preview">
         <h1>{{ form.title }}</h1>
         <p>视频来源：{{ sourceLabel }}</p>
-        <p>视频地址：{{ form.videoUrl }}</p>
+        <video v-if="localPlayUrl" class="player" :src="localPlayUrl" controls preload="metadata" />
+        <p v-else>视频地址：{{ form.videoUrl }}</p>
         <p>时长：{{ form.duration ?? '' }}<span v-if="durationText">（{{ durationText }}）</span></p>
         <p>简介：{{ form.summary }}</p>
         <div v-if="form.coverUrl" class="media">
@@ -343,7 +396,7 @@ onMounted(() => {
             <template #error>封面加载失败</template>
           </el-image>
         </div>
-        <div class="media">
+        <div v-if="!localSource" class="media">
           <span>二维码</span>
           <el-image v-if="qrPreview" :src="qrPreview" :preview-src-list="[qrPreview]" fit="contain" class="qr-image">
             <template #error>二维码加载失败</template>
@@ -389,6 +442,12 @@ onMounted(() => {
 .duration {
   margin-left: 12px;
   color: #666;
+}
+
+.player {
+  width: 100%;
+  max-height: 360px;
+  background: #000;
 }
 
 .preview h1 {

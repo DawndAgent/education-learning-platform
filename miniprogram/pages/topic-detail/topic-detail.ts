@@ -2,6 +2,7 @@ import { getTopicDetail } from '../../services/topic'
 import { PageStatus } from '../../types/api'
 import { ApiError, toErrorMessage } from '../../utils/error'
 import { contentDetailUrl } from '../../utils/content-view'
+import { resolveMediaUrl } from '../../utils/media-url'
 import { topicTypeLabel } from '../../utils/topic-view'
 
 interface TopicContentCard {
@@ -75,7 +76,7 @@ Page<TopicDetailPageData, WechatMiniprogram.IAnyObject>({
           id: item.id,
           index: index + 1,
           title: item.title,
-          coverUrl: item.coverUrl || '',
+          coverUrl: resolveMediaUrl(item.coverUrl || ''),
           summary: item.summary || '',
           typeLabel: topicTypeLabel(item.contentType),
           url: contentDetailUrl(item.id)
@@ -83,7 +84,7 @@ Page<TopicDetailPageData, WechatMiniprogram.IAnyObject>({
         this.setData({
           status: 'success',
           name: detail.name,
-          coverUrl: detail.coverUrl || '',
+          coverUrl: resolveMediaUrl(detail.coverUrl || ''),
           summary: detail.summary || '',
           categoryName: detail.category?.name || '',
           contents

@@ -50,6 +50,32 @@ test('文章正文不能为空，保存时保留 HTML', () => {
   assert.equal(article.toArticlePayload(articleForm).body, '<p>第一段</p>')
 })
 
+test('文章可插入视频小程序码 HTML', () => {
+  const html = article.buildVideoMiniprogramQrHtml('/uploads/q.png', '听力课', '10001')
+  assert.match(html, /video-miniprogram-qr/)
+  assert.match(html, /data-video-id="10001"/)
+  assert.match(html, /src="\/uploads\/q\.png"/)
+  assert.match(html, /width:220px/)
+  assert.match(html, /扫码观看：听力课/)
+  assert.match(articlePage, /插入视频小程序码/)
+  assert.match(articlePage, /VideoMiniprogramQrDialog/)
+  assert.match(articlePage, /buildVideoMiniprogramQrHtml/)
+  assert.match(articlePage, /拖四角改大小/)
+  assert.match(articlePage, /自由移动/)
+  const richEditor = fs.readFileSync(path.resolve('src/components/RichTextEditor.vue'), 'utf8')
+  assert.match(richEditor, /bindImageFreeMove/)
+  assert.match(richEditor, /registerWangEditorImagePosition/)
+  const positionUtil = fs.readFileSync(path.resolve('src/utils/wangeditor-image-position.ts'), 'utf8')
+  assert.match(positionUtil, /margin-left/)
+  assert.match(positionUtil, /margin-top/)
+  const { buildImageStyleAttr, readCssLength } = require('../src/utils/image-position-style.ts')
+  assert.equal(
+    buildImageStyleAttr({ width: '220px', marginLeft: '40px', marginTop: '12px' }),
+    'width: 220px;margin-left: 40px;margin-top: 12px;'
+  )
+  assert.equal(readCssLength('width:220px;margin-left:40px;', 'margin-left'), '40px')
+})
+
 test('视频草稿可以暂缺地址，发布时必须是合法 URL', () => {
   const form = {
     title: '听力课',
@@ -69,8 +95,14 @@ test('视频草稿可以暂缺地址，发布时必须是合法 URL', () => {
   assert.equal(video.validateVideoForm({ ...form, qrCodeUrl: 'not-a-url' }, leaves), '二维码地址不合法')
   assert.equal(video.validateVideoForm({ ...form, qrCodeUrl: '/uploads/qr.png' }, leaves), null)
   assert.equal(video.validateVideoForm({ ...form, sourceType: '' }, leaves), '请选择视频来源')
-  assert.equal(video.sourceTypeLabel('TENCENT_VIDEO'), '腾讯视频')
-  assert.equal(video.sourceTypeLabel('WECHAT_CHANNEL'), '微信视频号')
+  assert.equal(video.sourceTypeLabel('LOCAL'), '本地上传')
+  assert.equal(video.validateVideoPublish({ ...form, sourceType: 'LOCAL' }, leaves), '视频地址不能为空')
+  assert.equal(video.validateVideoPublish({
+    ...form,
+    sourceType: 'LOCAL',
+    videoUrl: '/uploads/videos/local/a.mp4'
+  }, leaves), null)
+  assert.equal(video.toVideoPayload({ ...form, sourceType: 'LOCAL', videoUrl: '/uploads/a.mp4' }).sourceType, 'LOCAL')
   assert.equal(video.formatDuration(65), '01:05')
   assert.equal(video.formatDuration(3665), '61:05')
   assert.equal(video.canPreviewQr('/uploads/qr.png'), true)
@@ -97,6 +129,8 @@ test('文章和视频编辑页覆盖预览、发布、离开确认', () => {
   assert.equal(articlePage.includes("from 'axios'"), false)
   assert.match(videoPage, /videoApi\.updateVideo/)
   assert.match(videoPage, /videoApi\.createVideo/)
+  assert.match(videoPage, /VideoFileUpload/)
+  assert.match(videoPage, /value="LOCAL"/)
   assert.match(videoPage, /二维码加载失败/)
   assert.match(videoPage, /查看二维码/)
   assert.match(videoPage, /保存草稿/)

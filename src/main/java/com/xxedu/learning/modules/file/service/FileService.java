@@ -6,6 +6,7 @@ import com.xxedu.learning.common.log.BizLogger;
 import com.xxedu.learning.modules.file.enums.UploadScene;
 import com.xxedu.learning.modules.file.support.DocumentUploadValidator;
 import com.xxedu.learning.modules.file.support.ImageUploadValidator;
+import com.xxedu.learning.modules.file.support.VideoUploadValidator;
 import com.xxedu.learning.modules.file.vo.FileUploadVO;
 import com.xxedu.learning.security.PermissionCodes;
 import com.xxedu.learning.security.RequirePermission;
@@ -34,11 +35,16 @@ public class FileService {
         UploadScene resolved = scene == null ? UploadScene.COVER : scene;
         if (resolved == UploadScene.DOCUMENT) {
             DocumentUploadValidator.ValidatedDocument validated = DocumentUploadValidator.validate(file);
-            return store(file, objectKey(resolved, validated.extension(), true),
+            return store(file, objectKey(resolved, validated.extension(), "files/"),
+                    validated.contentType(), validated.size(), validated.fileName());
+        }
+        if (resolved == UploadScene.VIDEO_FILE) {
+            VideoUploadValidator.ValidatedVideo validated = VideoUploadValidator.validate(file);
+            return store(file, objectKey(resolved, validated.extension(), "videos/"),
                     validated.contentType(), validated.size(), validated.fileName());
         }
         ImageUploadValidator.ValidatedImage validated = ImageUploadValidator.validate(file);
-        return store(file, objectKey(resolved, validated.extension(), false),
+        return store(file, objectKey(resolved, validated.extension(), "images/"),
                 validated.contentType(), validated.size(), validated.fileName());
     }
 
@@ -54,8 +60,7 @@ public class FileService {
         }
     }
 
-    private String objectKey(UploadScene scene, String extension, boolean document) {
-        String prefix = document ? "files/" : "images/";
+    private String objectKey(UploadScene scene, String extension, String prefix) {
         return prefix + scene.folder() + "/" + LocalDate.now().format(DAY)
                 + "/" + UUID.randomUUID() + "." + extension;
     }

@@ -4,7 +4,9 @@ import com.xxedu.learning.common.api.ApiResponse;
 import com.xxedu.learning.common.constant.ApiConstants;
 import com.xxedu.learning.modules.video.dto.VideoCreateRequest;
 import com.xxedu.learning.modules.video.dto.VideoUpdateRequest;
+import com.xxedu.learning.modules.video.service.VideoMiniprogramQrService;
 import com.xxedu.learning.modules.video.service.VideoService;
+import com.xxedu.learning.modules.video.vo.MiniprogramQrVO;
 import com.xxedu.learning.modules.video.vo.VideoDetailVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "视频管理")
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class VideoAdminController {
 
     private final VideoService videoService;
+    private final VideoMiniprogramQrService videoMiniprogramQrService;
 
     @Operation(summary = "新增视频")
     @PostMapping
@@ -43,5 +47,12 @@ public class VideoAdminController {
     @GetMapping("/{contentId}")
     public ApiResponse<VideoDetailVO> detail(@PathVariable Long contentId) {
         return ApiResponse.ok(videoService.adminDetail(contentId));
+    }
+
+    @Operation(summary = "生成或获取打开小程序视频详情的小程序码")
+    @PostMapping("/{contentId}/miniprogram-qrcode")
+    public ApiResponse<MiniprogramQrVO> miniprogramQrcode(@PathVariable Long contentId,
+                                                          @RequestParam(defaultValue = "false") boolean force) {
+        return ApiResponse.ok(videoMiniprogramQrService.ensureMiniprogramQr(contentId, force));
     }
 }

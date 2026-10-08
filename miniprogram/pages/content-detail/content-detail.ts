@@ -6,7 +6,7 @@ import { getQuestionDetail } from '../../services/question'
 import { getVideoDetail } from '../../services/video'
 import { getWeeklyDetail } from '../../services/weekly'
 import { DetailView, blankDetail, isHttpUrl, loadContentDetail } from '../../utils/content-detail'
-import { contentDetailUrl } from '../../utils/content-view'
+import { contentDetailUrl, resolveContentIdFromQuery } from '../../utils/content-view'
 
 interface ContentDetailPageData extends DetailView {
   contentId: string
@@ -27,7 +27,10 @@ Page<ContentDetailPageData, WechatMiniprogram.IAnyObject>({
   },
 
   onLoad(query) {
-    const contentId = query.id || ''
+    const contentId = resolveContentIdFromQuery({
+      id: query.id,
+      scene: query.scene
+    })
     this.setData({ contentId, viewed: false, answerExpanded: false, analysisExpanded: false })
     this.data.contentId = contentId
     this.data.viewed = false

@@ -1,92 +1,165 @@
-<view class="page">
-  <view class="hero">
-    <view class="brand">XX教育学习中心</view>
-    <view class="title">学习内容平台</view>
-    <view class="hint">剑桥英语 · 数学思维 · 初中自主学习</view>
-  </view>
-
-  <view class="search-entry" bindtap="goSearch">
-    <text class="search-placeholder">搜索文章、视频标题</text>
-    <text class="search-action">搜索</text>
-  </view>
-
-  <loading-view wx:if="{{status === 'loading' && banners.length === 0 && entries.length === 0}}" message="加载中..." />
-  <error-view
-    wx:elif="{{status === 'error'}}"
-    message="{{error || '首页加载失败'}}"
-    button-text="重新加载"
-    bind:retry="reload"
-  />
-  <block wx:else>
-    <swiper
-      wx:if="{{banners.length}}"
-      class="banner"
-      indicator-dots="{{banners.length > 1}}"
-      circular="{{banners.length > 1}}"
-      autoplay="{{banners.length > 1}}"
-    >
-      <swiper-item wx:for="{{banners}}" wx:key="id">
-        <view class="banner-slide" data-index="{{index}}" bindtap="onBannerTap">
-          <image class="banner-image" src="{{item.imageUrl}}" mode="aspectFill" />
-          <view class="banner-text">
-            <view class="banner-title">{{item.title}}</view>
-            <view class="banner-subtitle" wx:if="{{item.subtitle}}">{{item.subtitle}}</view>
+<view class="shell">
+  <swiper
+    class="main-swiper"
+    current="{{activeTab}}"
+    duration="280"
+    bindchange="onSwiperChange"
+  >
+    <swiper-item>
+      <scroll-view class="pane" scroll-y show-scrollbar="{{false}}">
+        <view class="pane-inner {{tabs.length > 1 ? 'with-nav' : ''}}">
+          <view class="search-entry" bindtap="goSearch">
+            <text class="search-placeholder">搜索文章、视频标题</text>
+            <text class="search-action">搜索</text>
           </view>
+
+          <loading-view wx:if="{{status === 'loading' && banners.length === 0}}" message="加载中..." />
+          <error-view
+            wx:elif="{{status === 'error'}}"
+            message="{{error || '首页加载失败'}}"
+            button-text="重新加载"
+            bind:retry="reload"
+          />
+          <block wx:else>
+            <swiper
+              wx:if="{{banners.length}}"
+              class="banner"
+              indicator-dots="{{banners.length > 1}}"
+              circular="{{banners.length > 1}}"
+              autoplay="{{banners.length > 1}}"
+            >
+              <swiper-item wx:for="{{banners}}" wx:key="id">
+                <view class="banner-slide" data-index="{{index}}" bindtap="onBannerTap">
+                  <image class="banner-image" src="{{item.imageUrl}}" mode="aspectFill" />
+                  <view class="banner-text">
+                    <view class="banner-title">{{item.title}}</view>
+                    <view class="banner-subtitle" wx:if="{{item.subtitle}}">{{item.subtitle}}</view>
+                  </view>
+                </view>
+              </swiper-item>
+            </swiper>
+
+            <view class="section" wx:if="{{recommendations.length}}">重点推荐</view>
+            <content-card
+              wx:for="{{recommendations}}"
+              wx:key="id"
+              title="{{item.title}}"
+              cover-url="{{item.coverUrl}}"
+              type-label="{{item.typeLabel}}"
+              summary="{{item.summary}}"
+              url="{{item.url}}"
+            />
+
+            <view class="section-row" wx:if="{{topics.length}}">
+              <view class="section">专题精选</view>
+              <view class="more" bindtap="goTopicList">全部专题</view>
+            </view>
+            <content-card
+              wx:for="{{topics}}"
+              wx:key="id"
+              title="{{item.title}}"
+              cover-url="{{item.coverUrl}}"
+              type-label="{{item.typeLabel}}"
+              summary="{{item.summary}}"
+              url="{{item.url}}"
+            />
+
+            <view class="section-row">
+              <view class="section">最新内容</view>
+              <view class="more" bindtap="goMore">更多</view>
+            </view>
+            <empty-view wx:if="{{latest.length === 0}}" message="暂无内容" />
+            <block wx:else>
+              <content-card
+                wx:for="{{latest}}"
+                wx:key="id"
+                title="{{item.title}}"
+                cover-url="{{item.coverUrl}}"
+                type-label="{{item.typeLabel}}"
+                meta="{{item.meta}}"
+                summary="{{item.summary}}"
+                date-text="{{item.dateText}}"
+                url="{{item.url}}"
+              />
+            </block>
+          </block>
         </view>
-      </swiper-item>
-    </swiper>
+      </scroll-view>
+    </swiper-item>
 
-    <view class="section" wx:if="{{entries.length}}">栏目导航</view>
-    <category-card
-      wx:for="{{entries}}"
-      wx:key="id"
-      name="{{item.name}}"
-      summary="{{item.summary}}"
-      url="{{item.url}}"
-    />
+    <swiper-item wx:for="{{panels}}" wx:key="categoryId" wx:for-index="panelIndex">
+      <scroll-view class="pane" scroll-y show-scrollbar="{{false}}">
+        <view class="pane-inner {{tabs.length > 1 ? 'with-nav' : ''}}">
+          <view class="category-head">
+            <view class="category-title">{{item.name}}</view>
+            <view class="category-hint">左右滑动可切换栏目</view>
+          </view>
 
-    <view class="section" wx:if="{{recommendations.length}}">重点推荐</view>
-    <content-card
-      wx:for="{{recommendations}}"
-      wx:key="id"
-      title="{{item.title}}"
-      cover-url="{{item.coverUrl}}"
-      type-label="{{item.typeLabel}}"
-      summary="{{item.summary}}"
-      url="{{item.url}}"
-    />
+          <loading-view wx:if="{{item.status === 'loading'}}" message="加载中..." />
+          <error-view
+            wx:elif="{{item.status === 'error'}}"
+            message="{{item.message}}"
+            button-text="重新加载"
+            data-index="{{panelIndex + 1}}"
+            bind:retry="retryCategoryPanel"
+          />
+          <block wx:else>
+            <block wx:if="{{item.children.length > 0}}">
+              <view class="section">子栏目</view>
+              <navigator class="child" wx:for="{{item.children}}" wx:for-item="child" wx:key="id" url="{{child.url}}">
+                <view class="child-name">{{child.name}}</view>
+                <view class="chevron">›</view>
+              </navigator>
+            </block>
+            <empty-view wx:elif="{{item.status === 'empty'}}" message="{{item.message || '暂无子分类'}}" />
 
-    <view class="section-row" wx:if="{{topics.length}}">
-      <view class="section">专题精选</view>
-      <view class="more" bindtap="goTopicList">全部专题</view>
+            <view class="section">最新内容</view>
+            <loading-view wx:if="{{item.latestStatus === 'loading'}}" message="加载中..." />
+            <error-view
+              wx:elif="{{item.latestStatus === 'error'}}"
+              message="{{item.latestError}}"
+              button-text="重新加载"
+              data-index="{{panelIndex + 1}}"
+              bind:retry="retryCategoryPanel"
+            />
+            <empty-view wx:elif="{{item.latestStatus === 'empty'}}" message="暂无内容" />
+            <block wx:else>
+              <content-card
+                wx:for="{{item.latest}}"
+                wx:for-item="card"
+                wx:key="id"
+                title="{{card.title}}"
+                cover-url="{{card.coverUrl}}"
+                type-label="{{card.typeLabel}}"
+                meta="{{card.meta}}"
+                summary="{{card.summary}}"
+                date-text="{{card.dateText}}"
+                url="{{card.url}}"
+              />
+            </block>
+          </block>
+        </view>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+
+  <view class="nav-footer" wx:if="{{tabs.length > 1}}">
+    <view
+      class="nav-item {{activeTab === index ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="key"
+      data-index="{{index}}"
+      bindtap="onTabTap"
+    >
+      <view class="nav-icon-wrap {{item.kind === 'home' ? 'home' : ''}}">
+        <image wx:if="{{item.iconUrl}}" class="nav-icon-image" src="{{item.iconUrl}}" mode="aspectFill" />
+        <view wx:elif="{{item.kind === 'home'}}" class="nav-home-glyph">
+          <view class="nav-home-roof"></view>
+          <view class="nav-home-body"></view>
+        </view>
+        <text wx:else class="nav-icon-text">{{item.iconText}}</text>
+      </view>
+      <text class="nav-name">{{item.shortName}}</text>
     </view>
-    <content-card
-      wx:for="{{topics}}"
-      wx:key="id"
-      title="{{item.title}}"
-      cover-url="{{item.coverUrl}}"
-      type-label="{{item.typeLabel}}"
-      summary="{{item.summary}}"
-      url="{{item.url}}"
-    />
-
-    <view class="section-row">
-      <view class="section">最新内容</view>
-      <view class="more" bindtap="goMore">更多</view>
-    </view>
-    <empty-view wx:if="{{latest.length === 0}}" message="暂无内容" />
-    <block wx:else>
-      <content-card
-        wx:for="{{latest}}"
-        wx:key="id"
-        title="{{item.title}}"
-        cover-url="{{item.coverUrl}}"
-        type-label="{{item.typeLabel}}"
-        meta="{{item.meta}}"
-        summary="{{item.summary}}"
-        date-text="{{item.dateText}}"
-        url="{{item.url}}"
-      />
-    </block>
-  </block>
+  </view>
 </view>

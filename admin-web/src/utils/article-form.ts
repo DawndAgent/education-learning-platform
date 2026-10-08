@@ -74,3 +74,24 @@ export function toArticlePayload(form: ArticleFormValues): ArticlePayload {
     source: form.source.trim(),
   }
 }
+
+/**
+ * 插入到正文：小程序码图 + 说明。
+ * 默认宽 220px；点选后拖四角改大小，拖图片本体可自由移动（margin），也可用工具栏对齐。
+ */
+export function buildVideoMiniprogramQrHtml(url: string, title: string, contentId: string): string {
+  const safeUrl = url.trim().replace(/"/g, '&quot;')
+  const safeTitle = title
+    .trim()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+  const label = safeTitle || '视频'
+  const idAttr = String(contentId).replace(/"/g, '')
+  return (
+    `<p class="video-miniprogram-qr" data-video-id="${idAttr}">`
+    + `<img src="${safeUrl}" alt="扫码观看视频：${label}" data-href="${safeUrl}" style="width:220px;" />`
+    + `</p><p><span>扫码观看：${label}</span></p>`
+  )
+}

@@ -9,8 +9,13 @@ import lombok.RequiredArgsConstructor;
 public enum VideoSourceType {
 
     WECHAT_CHANNEL("WECHAT_CHANNEL"),
-    TENCENT_VIDEO("TENCENT_VIDEO");
+    TENCENT_VIDEO("TENCENT_VIDEO"),
+    LOCAL("LOCAL");
 
     @EnumValue
     private final String code;
+
+    public boolean inAppPlayback() {
+        return this == LOCAL;
+    }
 }

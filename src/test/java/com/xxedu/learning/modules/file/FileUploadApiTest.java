@@ -138,6 +138,40 @@ class FileUploadApiTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.data.contentType").value("image/png"));
     }
 
+    @Test
+    void uploadsMp4AsVideoFile() throws Exception {
+        TestAuth.loginOperator();
+        FileUploadVO vo = fileService.uploadImage(mp4("lesson.mp4"),
+                com.xxedu.learning.modules.file.enums.UploadScene.VIDEO_FILE);
+        assertThat(vo.getContentType()).isEqualTo("video/mp4");
+        assertThat(vo.getUrl()).startsWith("/uploads/videos/local/");
+        assertThat(vo.getObjectKey()).startsWith("videos/local/");
+        if (storageService instanceof LocalStorageService local) {
+            assertThat(Files.exists(local.resolveUnderRoot(vo.getObjectKey()))).isTrue();
+        }
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(vo.getUrl()))
+                .andExpect(status().isOk());
+        String token = jwtTokenService.issue(new LoginUser(1L, "admin", ClientType.ADMIN,
+                Set.of(PermissionCodes.FILE_UPLOAD)));
+        mockMvc.perform(multipart("/admin/api/files/upload")
+                        .file(mp4("api.mp4"))
+                        .param("scene", "VIDEO_FILE")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("0"))
+                .andExpect(jsonPath("$.data.contentType").value("video/mp4"))
+                .andExpect(jsonPath("$.data.url").value(org.hamcrest.Matchers.startsWith("/uploads/videos/local/")));
+    }
+
+    @Test
+    void rejectsNonMp4ForVideoFileScene() throws Exception {
+        TestAuth.loginOperator();
+        assertThatThrownBy(() -> fileService.uploadImage(png("cover.png"),
+                com.xxedu.learning.modules.file.enums.UploadScene.VIDEO_FILE))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("仅支持 MP4 视频");
+    }
+
     private void assertUploadOk(MockMultipartFile file, String contentType) throws Exception {
         TestAuth.loginOperator();
         FileUploadVO vo = fileService.uploadImage(file, null);
@@ -159,6 +193,18 @@ class FileUploadApiTest extends IntegrationTestSupport {
                 .hasMessage(message)
                 .extracting(ex -> ((BusinessException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.BAD_REQUEST);
+    }
+
+    private MockMultipartFile mp4(String name) {
+        byte[] bytes = new byte[] {
+                0x00, 0x00, 0x00, 0x18,
+                0x66, 0x74, 0x79, 0x70,
+                0x69, 0x73, 0x6F, 0x6D,
+                0x00, 0x00, 0x02, 0x00,
+                0x69, 0x73, 0x6F, 0x6D,
+                0x6D, 0x70, 0x34, 0x31
+        };
+        return new MockMultipartFile("file", name, "video/mp4", bytes);
     }
 
     private MockMultipartFile png(String name) throws Exception {

@@ -209,6 +209,11 @@ test('点击内容进入详情', () => {
   const card = list.toContentCard(record('345', 'ARTICLE', 'PET 高频词汇 1000 词'))
   assert.equal(card.id, '345')
   assert.equal(card.url, '/pages/content-detail/content-detail?id=345')
+  const uploaded = list.toContentCard({
+    ...record('346', 'ARTICLE', '封面内容'),
+    coverUrl: '/uploads/images/covers/a.png'
+  })
+  assert.equal(uploaded.coverUrl, 'http://127.0.0.1:8080/uploads/images/covers/a.png')
 })
 
 test('分类不存在', () => {

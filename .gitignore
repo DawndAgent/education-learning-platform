@@ -13,3 +13,7 @@ data/uploads/
 
 data/uploads/
 target/test-uploads/
+deploy/.env
+deploy/admin-dist/*
+!deploy/admin-dist/.gitkeep
+project.private.config.json

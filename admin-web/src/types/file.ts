@@ -6,4 +6,12 @@ export interface FileUploadResult {
   size: number
 }
 
-export type UploadScene = 'ARTICLE' | 'COVER' | 'VIDEO' | 'QRCODE' | 'QUESTION' | 'WEEKLY' | 'DOCUMENT'
+export type UploadScene =
+  | 'ARTICLE'
+  | 'COVER'
+  | 'VIDEO'
+  | 'VIDEO_FILE'
+  | 'QRCODE'
+  | 'QUESTION'
+  | 'WEEKLY'
+  | 'DOCUMENT'

@@ -163,3 +163,25 @@ test('首页没有写死分类编号', () => {
   assert.equal(page.includes('categoryId='), false)
   assert.equal(page.includes('id=1'), false)
 })
+
+test('首页底部导航支持滑动切换', () => {
+  const homeView = require('../miniprogram/utils/home-view.ts')
+  const tabs = homeView.toNavTabs([
+    { id: '10', name: '剑桥英语', code: 'en', iconUrl: null },
+    { id: '20', name: '数学思维', code: 'math', iconUrl: '/uploads/a.png' },
+    { id: '30', name: '初中自主学习', code: 'mid', iconUrl: null }
+  ])
+  assert.equal(tabs[0].kind, 'home')
+  assert.equal(tabs[0].shortName, '首页')
+  assert.equal(tabs[1].shortName, '剑桥英语')
+  assert.equal(tabs[3].shortName, '初中自主')
+  assert.equal(tabs[2].iconUrl.endsWith('/uploads/a.png'), true)
+  assert.match(tabs[2].iconUrl, /^https?:\/\//)
+  const page = fs.readFileSync(new URL('../miniprogram/pages/index/index.wxml', import.meta.url), 'utf8')
+  assert.match(page, /main-swiper/)
+  assert.match(page, /onSwiperChange/)
+  assert.match(page, /onTabTap/)
+  const source = fs.readFileSync(new URL('../miniprogram/pages/index/index.ts', import.meta.url), 'utf8')
+  assert.match(source, /onSwiperChange/)
+  assert.match(source, /ensureCategoryPanel/)
+})

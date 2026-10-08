@@ -5,12 +5,14 @@ import { createEditor, createToolbar, type IDomEditor, type IEditorConfig, type 
 import '@wangeditor/editor/dist/css/style.css'
 import { fileApi } from '@/api/file'
 import { validateImageFile } from '@/utils/file-upload'
+import { bindImageFreeMove, registerWangEditorImagePosition } from '@/utils/wangeditor-image-position'
 
 const model = defineModel<string>({ required: true })
 
 const toolbarBox = ref<HTMLDivElement>()
 const editorBox = ref<HTMLDivElement>()
 const editorRef = shallowRef<IDomEditor>()
+let unbindImageMove: (() => void) | undefined
 
 const toolbarConfig: Partial<IToolbarConfig> = {
   excludeKeys: ['group-video', 'insertVideo', 'uploadVideo', 'fullScreen'],
@@ -20,6 +22,7 @@ onMounted(() => {
   if (!editorBox.value || !toolbarBox.value) {
     return
   }
+  registerWangEditorImagePosition()
   const config: Partial<IEditorConfig> = {
     placeholder: '请输入正文',
     MENU_CONF: {
@@ -61,6 +64,7 @@ onMounted(() => {
     config: toolbarConfig,
   })
   editorRef.value = editor
+  unbindImageMove = bindImageFreeMove(editor)
 })
 
 watch(model, (value) => {
@@ -75,8 +79,21 @@ watch(model, (value) => {
 })
 
 onBeforeUnmount(() => {
+  unbindImageMove?.()
+  unbindImageMove = undefined
   editorRef.value?.destroy()
 })
+
+function insertHtml(html: string) {
+  const editor = editorRef.value
+  if (!editor || !html.trim()) {
+    return
+  }
+  editor.focus()
+  editor.dangerouslyInsertHtml(html)
+}
+
+defineExpose({ insertHtml })
 </script>
 
 <template>
@@ -96,5 +113,20 @@ onBeforeUnmount(() => {
 
 .rich-body {
   min-height: 360px;
+}
+
+.rich-body :deep(.w-e-image-container) {
+  cursor: grab;
+  touch-action: none;
+}
+
+.rich-body :deep(.w-e-image-container:active) {
+  cursor: grabbing;
+}
+
+.rich-body :deep(.w-e-image-container img) {
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
 }
 </style>

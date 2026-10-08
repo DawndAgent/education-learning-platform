@@ -1,5 +1,5 @@
 import type { ApiResponse } from '@/types/api'
-import type { VideoDetail, VideoPayload } from '@/types/video'
+import type { MiniprogramQr, VideoDetail, VideoPayload } from '@/types/video'
 import request from './request'
 
 export function getVideo(id: string) {
@@ -14,8 +14,17 @@ export function updateVideo(id: string, payload: VideoPayload) {
   return request.put<ApiResponse<VideoDetail>>(`/admin/api/videos/${id}`, payload)
 }
 
+export function createMiniprogramQr(contentId: string, force = false) {
+  return request.post<ApiResponse<MiniprogramQr>>(
+    `/admin/api/videos/${contentId}/miniprogram-qrcode`,
+    {},
+    { params: { force } },
+  )
+}
+
 export const videoApi = {
   getVideo,
   createVideo,
   updateVideo,
+  createMiniprogramQr,
 }

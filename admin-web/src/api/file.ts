@@ -1,14 +1,15 @@
 import type { ApiResponse } from '@/types/api'
 import type { FileUploadResult, UploadScene } from '@/types/file'
-import { validateDocumentFile, validateImageFile } from '@/utils/file-upload'
+import { validateDocumentFile, validateImageFile, validateVideoFile } from '@/utils/file-upload'
 import request from './request'
 
-export { validateDocumentFile, validateImageFile }
+export { validateDocumentFile, validateImageFile, validateVideoFile }
 
 function uploadFile(
   file: File,
   options?: {
     scene?: UploadScene
+    timeout?: number
     onProgress?: (percent: number) => void
   },
 ) {
@@ -18,7 +19,7 @@ function uploadFile(
     form.append('scene', options.scene)
   }
   return request.post<ApiResponse<FileUploadResult>>('/admin/api/files/upload', form, {
-    timeout: 60000,
+    timeout: options?.timeout ?? 60000,
     onUploadProgress(event) {
       if (!options?.onProgress || !event.total) {
         return
@@ -51,9 +52,24 @@ export function uploadDocument(
   })
 }
 
+export function uploadVideo(
+  file: File,
+  options?: {
+    onProgress?: (percent: number) => void
+  },
+) {
+  return uploadFile(file, {
+    scene: 'VIDEO_FILE',
+    timeout: 180000,
+    onProgress: options?.onProgress,
+  })
+}
+
 export const fileApi = {
   uploadImage,
   uploadDocument,
+  uploadVideo,
   validateImageFile,
   validateDocumentFile,
+  validateVideoFile,
 }

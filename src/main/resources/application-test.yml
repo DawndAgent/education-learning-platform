@@ -21,6 +21,10 @@ app:
   jwt:
     secret: test-only-jwt-secret-key-32bytes!!
     ttl: 2h
+  wechat:
+    miniapp:
+      mock-enabled: true
+      env-version: develop
 
 content:
   publish:

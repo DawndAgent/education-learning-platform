@@ -8,6 +8,7 @@ import { contentApi } from '@/api/content'
 import RichTextEditor from '@/components/RichTextEditor.vue'
 import ContentScheduleActions from '@/components/ContentScheduleActions.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
+import VideoMiniprogramQrDialog from '@/components/VideoMiniprogramQrDialog.vue'
 import { useUnsavedLeave } from '@/composables/useUnsavedLeave'
 import { useAuthStore } from '@/stores/auth'
 import type { Category } from '@/types/category'
@@ -15,6 +16,7 @@ import type { ContentStatus } from '@/types/content'
 import { normalizeTree } from '@/utils/category-form'
 import { categoryOptions, displayStatusLabel, formatTime, offlineConfirmText, publishActionLabel, publishConfirmText, saveSuccessMessage } from '@/utils/content-form'
 import {
+  buildVideoMiniprogramQrHtml,
   previewHtml,
   toArticlePayload,
   validateArticleForm,
@@ -32,11 +34,13 @@ const loadError = ref('')
 const previewVisible = ref(false)
 const categories = ref<Category[]>([])
 const formRef = ref<FormInstance>()
+const editorRef = ref<{ insertHtml: (html: string) => void }>()
 const contentId = ref(route.name === 'article-create' ? '' : String(route.params.id || ''))
 const status = ref<ContentStatus>('DRAFT')
 const publishTime = ref<string | null>(null)
 const scheduledPublishTime = ref<string | null>(null)
 const snapshot = ref('')
+const qrDialogVisible = ref(false)
 
 const form = reactive<ArticleFormValues>({
   title: '',
@@ -226,6 +230,11 @@ async function onOffline() {
   }
 }
 
+function onInsertVideoQr(payload: { contentId: string; title: string; url: string }) {
+  const html = buildVideoMiniprogramQrHtml(payload.url, payload.title, payload.contentId)
+  editorRef.value?.insertHtml(html)
+}
+
 watch(
   () => [route.name, route.params.id] as const,
   () => {
@@ -305,9 +314,18 @@ onMounted(() => {
         <el-input-number v-model="form.sort" :min="0" :max="9999" />
       </el-form-item>
       <el-form-item label="正文">
-        <RichTextEditor v-model="form.body" />
+        <div class="body-toolbar">
+          <el-button :disabled="!canSave || busy" @click="qrDialogVisible = true">
+            插入视频小程序码
+          </el-button>
+          <span class="body-hint">
+            光标放在题后插入；点选后拖四角改大小，拖图片可自由移动，也可用工具栏左/中/右对齐
+          </span>
+        </div>
+        <RichTextEditor ref="editorRef" v-model="form.body" />
       </el-form-item>
     </el-form>
+    <VideoMiniprogramQrDialog v-model="qrDialogVisible" @insert="onInsertVideoQr" />
     <el-dialog v-model="previewVisible" title="文章预览" width="720px">
       <article class="preview">
         <h1>{{ form.title }}</h1>
@@ -348,5 +366,19 @@ onMounted(() => {
 
 .preview-body :deep(img) {
   max-width: 100%;
+}
+
+.body-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.body-hint {
+  color: #909399;
+  font-size: 12px;
 }
 </style>

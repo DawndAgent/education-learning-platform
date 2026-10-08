@@ -13,8 +13,18 @@ export interface VideoFormValues {
   duration: number | null
 }
 
+const SOURCE_LABELS: Record<VideoSourceType, string> = {
+  LOCAL: '本地上传',
+  WECHAT_CHANNEL: '微信视频号',
+  TENCENT_VIDEO: '腾讯视频',
+}
+
+export function isLocalSource(sourceType: string): boolean {
+  return sourceType === 'LOCAL'
+}
+
 export function sourceTypeLabel(sourceType: VideoSourceType): string {
-  return sourceType === 'WECHAT_CHANNEL' ? '微信视频号' : '腾讯视频'
+  return SOURCE_LABELS[sourceType] || sourceType
 }
 
 export function formatDuration(seconds: number | null): string {
@@ -44,10 +54,15 @@ export function validateVideoForm(form: VideoFormValues, leaves: readonly string
   if (form.sort === null || !Number.isInteger(form.sort) || form.sort < 0 || form.sort > 9999) {
     return '排序范围为 0 到 9999'
   }
-  if (form.sourceType !== 'WECHAT_CHANNEL' && form.sourceType !== 'TENCENT_VIDEO') {
+  if (
+    form.sourceType !== 'WECHAT_CHANNEL'
+    && form.sourceType !== 'TENCENT_VIDEO'
+    && form.sourceType !== 'LOCAL'
+  ) {
     return '请选择视频来源'
   }
-  const videoUrlError = optionalUrl(form.videoUrl, true, '视频地址长度不能超过512', '视频地址不合法')
+  const absoluteVideoUrl = !isLocalSource(form.sourceType)
+  const videoUrlError = optionalUrl(form.videoUrl, absoluteVideoUrl, '视频地址长度不能超过512', '视频地址不合法')
   if (videoUrlError) {
     return videoUrlError
   }
@@ -74,6 +89,12 @@ export function validateVideoPublish(form: VideoFormValues, leaves: readonly str
   }
   if (!form.videoUrl.trim()) {
     return '视频地址不能为空'
+  }
+  if (isLocalSource(form.sourceType)) {
+    if (!isMediaUrl(form.videoUrl)) {
+      return '视频地址不合法'
+    }
+    return null
   }
   if (!/^https?:\/\/\S+$/i.test(form.videoUrl.trim())) {
     return '视频地址不合法'
@@ -119,7 +140,11 @@ export function toVideoPayload(form: VideoFormValues): VideoPayload {
     coverUrl: form.coverUrl.trim(),
     summary: form.summary.trim(),
     sort: form.sort ?? 0,
-    sourceType: form.sourceType === 'TENCENT_VIDEO' ? 'TENCENT_VIDEO' : 'WECHAT_CHANNEL',
+    sourceType: form.sourceType === 'TENCENT_VIDEO'
+      ? 'TENCENT_VIDEO'
+      : form.sourceType === 'LOCAL'
+        ? 'LOCAL'
+        : 'WECHAT_CHANNEL',
     videoUrl: form.videoUrl.trim(),
     qrCodeUrl: form.qrCodeUrl.trim(),
     duration: form.duration,
@@ -128,4 +153,13 @@ export function toVideoPayload(form: VideoFormValues): VideoPayload {
 
 export function canPreviewQr(url: string): boolean {
   return isMediaUrl(url)
+}
+
+export function fileNameFromUrl(url: string): string {
+  const path = url.trim().split('?')[0]
+  if (!path) {
+    return ''
+  }
+  const parts = path.split('/')
+  return parts[parts.length - 1] || ''
 }

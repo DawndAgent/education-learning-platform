@@ -1,33 +1,38 @@
-.hero {
-  padding: 8rpx 8rpx 16rpx;
+.shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f6f7f9;
 }
 
-.brand {
-  font-size: 26rpx;
-  color: #1f6feb;
-  font-weight: 600;
+.main-swiper {
+  flex: 1;
+  min-height: 0;
+  height: 0;
 }
 
-.title {
-  margin-top: 8rpx;
-  font-size: 44rpx;
-  font-weight: 700;
+.pane {
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.hint {
-  margin-top: 12rpx;
-  color: #646a73;
-  font-size: 26rpx;
+.pane-inner {
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.pane-inner.with-nav {
+  padding-bottom: calc(32rpx + 160rpx + env(safe-area-inset-bottom));
 }
 
 .search-entry {
   display: flex;
   align-items: center;
-  margin-top: 28rpx;
   padding: 0 28rpx;
   height: 80rpx;
   background: #ffffff;
   border-radius: 40rpx;
+  box-shadow: 0 8rpx 24rpx rgba(31, 35, 41, 0.04);
 }
 
 .search-placeholder {
@@ -63,41 +68,6 @@
 .more {
   color: #1f6feb;
   font-size: 26rpx;
-}
-
-.topic-entry {
-  display: flex;
-  margin-top: 20rpx;
-  padding: 24rpx;
-  background: #ffffff;
-  border-radius: 20rpx;
-}
-
-.topic-cover {
-  flex: none;
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 12rpx;
-  background: #eef2f6;
-}
-
-.cover-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #8f959e;
-  font-size: 22rpx;
-}
-
-.topic-body {
-  flex: 1;
-  min-width: 0;
-  margin-left: 24rpx;
-}
-
-.topic-name {
-  font-size: 30rpx;
-  font-weight: 600;
 }
 
 .banner {
@@ -136,4 +106,160 @@
 .banner-subtitle {
   margin-top: 6rpx;
   font-size: 24rpx;
+}
+
+.category-head {
+  padding: 8rpx 4rpx 12rpx;
+}
+
+.category-title {
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.category-hint {
+  margin-top: 8rpx;
+  color: #8f959e;
+  font-size: 24rpx;
+}
+
+.child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  padding: 28rpx 24rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+}
+
+.child-name {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.chevron {
+  color: #c0c4cc;
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.nav-footer {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: calc(16rpx + env(safe-area-inset-bottom));
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  gap: 4rpx;
+  padding: 12rpx 10rpx 14rpx;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1rpx solid rgba(31, 35, 41, 0.06);
+  border-radius: 28rpx;
+  box-shadow: 0 12rpx 40rpx rgba(31, 35, 41, 0.12);
+}
+
+.nav-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rpx 4rpx;
+  border-radius: 20rpx;
+  transition: background-color 0.2s ease;
+}
+
+.nav-item.active {
+  background: rgba(31, 111, 235, 0.08);
+}
+
+.nav-icon-wrap {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2f6;
+  overflow: hidden;
+}
+
+.nav-item.active .nav-icon-wrap {
+  background: #1f6feb;
+}
+
+.nav-icon-wrap.home {
+  background: #e8f1ff;
+}
+
+.nav-item.active .nav-icon-wrap.home {
+  background: #1f6feb;
+}
+
+.nav-icon-image {
+  width: 100%;
+  height: 100%;
+}
+
+.nav-icon-text {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #646a73;
+}
+
+.nav-item.active .nav-icon-text {
+  color: #ffffff;
+}
+
+.nav-home-glyph {
+  width: 28rpx;
+  height: 26rpx;
+  position: relative;
+}
+
+.nav-home-roof {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 14rpx;
+  background: #1f6feb;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.nav-item.active .nav-home-roof {
+  background: #ffffff;
+}
+
+.nav-home-body {
+  position: absolute;
+  left: 6rpx;
+  right: 6rpx;
+  bottom: 0;
+  height: 14rpx;
+  border-radius: 2rpx 2rpx 0 0;
+  background: #1f6feb;
+}
+
+.nav-item.active .nav-home-body {
+  background: #ffffff;
+}
+
+.nav-name {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #646a73;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nav-item.active .nav-name {
+  color: #1f6feb;
 }

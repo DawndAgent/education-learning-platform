@@ -18,6 +18,8 @@ public class Video extends BaseEntity {
     private VideoSourceType sourceType;
     private String videoUrl;
     private String qrCodeUrl;
+    /** 打开小程序视频详情页的码图 URL（getwxacodeunlimit）。 */
+    private String miniprogramQrUrl;
     private Integer duration;
     private ContentStatus status;
 }

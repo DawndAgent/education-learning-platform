@@ -7,6 +7,7 @@ public enum UploadScene {
     ARTICLE("articles"),
     COVER("covers"),
     VIDEO("videos"),
+    VIDEO_FILE("local"),
     QRCODE("qrcodes"),
     QUESTION("questions"),
     WEEKLY("weeklies"),

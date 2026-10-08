@@ -82,7 +82,11 @@ public class VideoService {
 
     private void applyVideo(Video video, Content content, VideoSourceType sourceType,
                             String videoUrl, String qrCodeUrl, Integer duration) {
-        HttpUrls.requireHttpIfPresent(videoUrl, "视频地址不合法");
+        if (sourceType != null && sourceType.inAppPlayback()) {
+            HttpUrls.requireMediaUrlIfPresent(videoUrl, "视频地址不合法");
+        } else {
+            HttpUrls.requireHttpIfPresent(videoUrl, "视频地址不合法");
+        }
         HttpUrls.requireMediaUrlIfPresent(qrCodeUrl, "二维码地址不合法");
         video.setTitle(content.getTitle());
         video.setCoverUrl(content.getCoverUrl());

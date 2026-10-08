@@ -3,6 +3,7 @@ import { PageStatus } from '../../types/api'
 import type { TopicListItem } from '../../types/topic'
 import { toErrorMessage } from '../../utils/error'
 import { topicDetailUrl } from '../../utils/topic-view'
+import { resolveMediaUrl } from '../../utils/media-url'
 
 interface TopicCard {
   id: string
@@ -127,7 +128,7 @@ function toCard(item: TopicListItem): TopicCard {
   return {
     id: item.id,
     name: item.name,
-    coverUrl: item.coverUrl || '',
+    coverUrl: resolveMediaUrl(item.coverUrl || ''),
     summary: item.summary || '',
     meta: item.categoryName || '',
     url: topicDetailUrl(item.id)

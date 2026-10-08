@@ -16,4 +16,16 @@ class HtmlSanitizerTest {
         assertThat(cleaned.toLowerCase()).doesNotContain("<script");
         assertThat(cleaned.toLowerCase()).doesNotContain("javascript:");
     }
+
+    @Test
+    void keepsVideoMiniprogramQrMarkup() {
+        String cleaned = HtmlSanitizer.clean(
+                "<p class=\"video-miniprogram-qr\" data-video-id=\"10001\">"
+                        + "<img src=\"/uploads/images/qrcodes/miniprogram/v10001.png\" "
+                        + "alt=\"扫码观看视频：听力课\" style=\"max-width:220px;height:auto;\" />"
+                        + "<br/><span>扫码观看：听力课</span></p>");
+        assertThat(cleaned).contains("data-video-id=\"10001\"");
+        assertThat(cleaned).contains("video-miniprogram-qr");
+        assertThat(cleaned).contains("/uploads/images/qrcodes/miniprogram/v10001.png");
+    }
 }

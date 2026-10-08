@@ -1,12 +1,11 @@
 {
-  "navigationBarTitleText": "XX教育学习中心",
+  "navigationBarTitleText": "宿松好未来学习中心",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "dark",
   "usingComponents": {
     "loading-view": "/components/loading/loading",
     "empty-view": "/components/empty/empty",
     "error-view": "/components/error/error",
-    "category-card": "/components/category-card/category-card",
     "content-card": "/components/content-card/content-card"
   }
 }

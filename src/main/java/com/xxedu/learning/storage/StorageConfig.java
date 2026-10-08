@@ -27,8 +27,11 @@ public class StorageConfig implements WebMvcConfigurer {
         if ("local".equals(type)) {
             return new LocalStorageService(properties);
         }
-        if ("cos".equals(type) || "s3".equals(type) || "oss".equals(type)) {
-            return new ObjectStorageService();
+        if ("cos".equals(type)) {
+            return new CosStorageService(properties);
+        }
+        if ("s3".equals(type) || "oss".equals(type)) {
+            throw new IllegalStateException("storage.type=" + type + " 尚未实现，请使用 local 或 cos");
         }
         throw new IllegalStateException("不支持的 storage.type: " + properties.getType());
     }

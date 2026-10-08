@@ -158,6 +158,32 @@ class VideoServiceTest extends IntegrationTestSupport {
     }
 
     @Test
+    void localVideoPublishesWithoutQrCode() {
+        VideoCreateRequest request = create("本地课");
+        request.setSourceType(VideoSourceType.LOCAL);
+        request.setVideoUrl("/uploads/videos/local/demo.mp4");
+        request.setQrCodeUrl(null);
+        VideoDetailVO created = videoService.create(request);
+        assertThat(contentService.publish(created.getContentId()).getStatus()).isEqualTo(ContentStatus.PUBLISHED);
+        assertThat(videoService.publicDetail(created.getContentId()).getVideoUrl())
+                .isEqualTo("/uploads/videos/local/demo.mp4");
+        assertThat(videoService.publicDetail(created.getContentId()).getSourceType())
+                .isEqualTo(VideoSourceType.LOCAL);
+    }
+
+    @Test
+    void localVideoPublishRequiresMediaUrl() {
+        VideoCreateRequest request = create("本地坏地址");
+        request.setSourceType(VideoSourceType.LOCAL);
+        request.setVideoUrl(" ");
+        request.setQrCodeUrl(null);
+        VideoDetailVO created = videoService.create(request);
+        assertThatThrownBy(() -> contentService.publish(created.getContentId()))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("视频地址不能为空");
+    }
+
+    @Test
     void rejectsIllegalVideoAndQrUrls() {
         VideoCreateRequest badVideo = create("坏地址");
         badVideo.setVideoUrl("javascript:alert(1)");

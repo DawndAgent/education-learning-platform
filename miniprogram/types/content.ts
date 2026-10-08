@@ -2,7 +2,7 @@ import { PageResult } from './api'
 
 export type ContentType = 'ARTICLE' | 'VIDEO' | 'QUESTION' | 'TOPIC' | 'WEEKLY' | 'DOCUMENT'
 export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'OFFLINE'
-export type VideoSourceType = 'WECHAT_CHANNEL' | 'TENCENT_VIDEO'
+export type VideoSourceType = 'WECHAT_CHANNEL' | 'TENCENT_VIDEO' | 'LOCAL'
 
 /**
  * 与 ContentQueryRequest 一致。
